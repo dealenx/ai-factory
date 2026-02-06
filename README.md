@@ -1,3 +1,5 @@
+![logo](https://github.com/lee-to/ai-factory/raw/main/art/promo.png)
+
 # AI Factory
 
 > **Stop configuring. Start building.**
