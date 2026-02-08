@@ -14,7 +14,7 @@ export interface AiFactoryConfig {
 }
 
 const CONFIG_FILENAME = '.ai-factory.json';
-const CURRENT_VERSION = '1.0.0';
+const CURRENT_VERSION = '1.2.0';
 
 export function getConfigPath(projectDir: string): string {
   return path.join(projectDir, CONFIG_FILENAME);

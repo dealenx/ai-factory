@@ -421,7 +421,7 @@ All implementations include verbose, configurable logging:
 `.ai-factory.json`:
 ```json
 {
-  "version": "1.0.0",
+  "version": "1.2.0",
   "agent": "claude",
   "skillsDir": ".claude/skills",
   "installedSkills": ["ai-factory", "feature", "task", "implement", "commit"],
