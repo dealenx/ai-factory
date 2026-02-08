@@ -60,6 +60,8 @@ Then open Claude Code and start working:
 
 ## Development Workflow
 
+![workflow](https://github.com/lee-to/ai-factory/raw/main/art/workflow.png)
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         AI FACTORY WORKFLOW                             │
