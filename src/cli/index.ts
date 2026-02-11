@@ -7,7 +7,7 @@ const program = new Command();
 
 program
   .name('ai-factory')
-  .description('CLI tool for automating Claude Code context setup')
+  .description('CLI tool for automating AI agent context setup')
   .version(getCurrentVersion());
 
 program

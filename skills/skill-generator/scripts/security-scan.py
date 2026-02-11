@@ -113,8 +113,8 @@ _add(r'git\s+push\s+(-f|--force)\s+(origin\s+)?(main|master)',
 
 # ── 5. Configuration Tampering ────────────────────────────────────────────────
 
-_add(r'(write|modify|edit|change|overwrite|update)\s+.{0,30}(\.claude|claude\.json|settings\.json|settings\.local\.json|CLAUDE\.md)',
-     'CRITICAL', 'Config tampering: modifies Claude Code configuration')
+_add(r'(write|modify|edit|change|overwrite|update)\s+.{0,30}(\.claude|\.cursor|\.codex|\.github|\.gemini|\.junie|\.ai|claude\.json|settings\.json|settings\.local\.json|CLAUDE\.md)',
+     'CRITICAL', 'Config tampering: modifies AI agent configuration')
 
 _add(r'(write|modify|edit|change|overwrite)\s+.{0,30}(\.bashrc|\.zshrc|\.profile|\.bash_profile|crontab|\.gitconfig)',
      'CRITICAL', 'Shell config tampering: modifies user shell configuration')

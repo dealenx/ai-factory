@@ -1,13 +1,14 @@
 import path from 'path';
 import { createRequire } from 'module';
 import { readJsonFile, writeJsonFile, fileExists } from '../utils/fs.js';
+import { getAgentConfig } from './agents.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../../package.json');
 
 export interface AiFactoryConfig {
   version: string;
-  agent: 'claude' | 'universal';
+  agent: string;
   skillsDir: string;
   installedSkills: string[];
   mcp: {
@@ -24,11 +25,12 @@ export function getConfigPath(projectDir: string): string {
   return path.join(projectDir, CONFIG_FILENAME);
 }
 
-export function createDefaultConfig(): AiFactoryConfig {
+export function createDefaultConfig(agentId: string = 'claude'): AiFactoryConfig {
+  const agent = getAgentConfig(agentId);
   return {
     version: CURRENT_VERSION,
-    agent: 'claude',
-    skillsDir: '.claude/skills',
+    agent: agentId,
+    skillsDir: agent.skillsDir,
     installedSkills: [],
     mcp: {
       github: false,
