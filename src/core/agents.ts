@@ -56,6 +56,14 @@ const AGENT_REGISTRY: Record<string, AgentConfig> = {
     settingsFile: null,
     supportsMcp: false,
   },
+  windsurf: {
+    id: 'windsurf',
+    displayName: 'Windsurf',
+    configDir: '.windsurf',
+    skillsDir: '.windsurf/skills',
+    settingsFile: null,
+    supportsMcp: false,
+  },
   warp: {
     id: 'warp',
     displayName: 'Warp',

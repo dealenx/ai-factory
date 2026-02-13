@@ -21,7 +21,7 @@ ai-factory init
 - **Spec-driven development** — AI follows plans, not random exploration. Predictable, resumable, reviewable
 - **Community skills** — leverage [skills.sh](https://skills.sh) ecosystem or generate custom skills
 - **Works with your stack** — Next.js, Laravel, Django, Express, and more
-- **Multi-agent support** — Claude Code, Cursor, OpenCode, Warp, Zencoder, Codex CLI, GitHub Copilot, Gemini CLI, Junie, or any agent
+- **Multi-agent support** — Claude Code, Cursor, Windsurf, OpenCode, Warp, Zencoder, Codex CLI, GitHub Copilot, Gemini CLI, Junie, or any agent
 
 ---
 
@@ -33,6 +33,7 @@ AI Factory works with any AI coding agent. During `ai-factory init`, you choose 
 |-------|-----------------|-----------------|
 | Claude Code | `.claude/` | `.claude/skills/` |
 | Cursor | `.cursor/` | `.cursor/skills/` |
+| Windsurf | `.windsurf/` | `.windsurf/skills/` |
 | OpenCode | `.opencode/` | `.opencode/skills/` |
 | Warp | `.warp/` | `.warp/skills/` |
 | Zencoder | `.zencoder/` | `.zencoder/skills/` |
@@ -69,7 +70,7 @@ ai-factory init
 ```
 
 This will:
-- Ask which AI agent you use (Claude, Cursor, OpenCode, Warp, Zencoder, Codex, Copilot, Gemini, Junie, or Universal)
+- Ask which AI agent you use (Claude, Cursor, Windsurf, OpenCode, Warp, Zencoder, Codex, Copilot, Gemini, Junie, or Universal)
 - Detect your project stack
 - Ask which base skills to install
 - Configure MCP servers (for supported agents)
@@ -596,7 +597,7 @@ All implementations include verbose, configurable logging:
 }
 ```
 
-The `agent` field can be any supported agent ID: `claude`, `cursor`, `opencode`, `warp`, `zencoder`, `codex`, `copilot`, `gemini`, `junie`, or `universal`. The `skillsDir` is set automatically based on the chosen agent.
+The `agent` field can be any supported agent ID: `claude`, `cursor`, `windsurf`, `opencode`, `warp`, `zencoder`, `codex`, `copilot`, `gemini`, `junie`, or `universal`. The `skillsDir` is set automatically based on the chosen agent.
 
 ![happy](https://github.com/lee-to/ai-factory/raw/main/art/happy.png)
 
@@ -607,6 +608,7 @@ The `agent` field can be any supported agent ID: `claude`, `cursor`, `opencode`,
 - [Claude Code](https://claude.ai/code) - Anthropic's AI coding agent
 - [Cursor](https://cursor.com) - AI-powered code editor
 - [OpenCode](https://opencode.ai) - Open-source AI coding agent
+- [Windsurf](https://windsurf.com) - AI-powered code editor by Codeium
 - [Warp](https://www.warp.dev) - Intelligent terminal with AI agent
 - [Zencoder](https://zencoder.ai) - AI coding agent for VS Code and JetBrains
 - [Codex CLI](https://github.com/openai/codex) - OpenAI's coding agent
