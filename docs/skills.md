@@ -69,6 +69,23 @@ Executes the plan:
 - If plan has `Docs: yes` — runs `/ai-factory.docs` after completion
 - Offers to delete .ai-factory/PLAN.md when done
 
+### `/ai-factory.verify [--strict]`
+Verifies completed implementation against the plan:
+```
+/ai-factory.verify          # Check all tasks were fully implemented
+/ai-factory.verify --strict # Strict mode — zero tolerance before merge
+```
+
+**Optional step after `/ai-factory.implement`** — when implementation finishes, you'll be asked if you want to verify.
+
+- **Task completion audit** — goes through every task in the plan, uses `Glob`/`Grep`/`Read` to confirm the code actually implements each requirement. Reports `COMPLETE`, `PARTIAL`, or `NOT FOUND` per task
+- **Build & test check** — runs the project's build command, test suite, and linters on changed files
+- **Consistency checks** — searches for leftover `TODO`/`FIXME`/`HACK`, undocumented environment variables, missing dependencies, plan-vs-code naming drift
+- **Auto-fix** — if issues found, offers to fix them immediately or accept as-is
+- **Follow-up suggestions** — after verification, suggests running `/ai-factory.security-checklist` and `/ai-factory.review`
+
+**Strict mode** (`--strict`) is recommended before merging: requires all tasks complete, build passing, tests passing, lint clean, zero TODOs in changed files.
+
 ### `/ai-factory.fix <bug description>`
 Quick bug fix without plans:
 ```

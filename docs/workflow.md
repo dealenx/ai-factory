@@ -61,6 +61,20 @@ AI Factory provides a set of **workflow skills** that form the core development 
                              └──────────┬───────────┘
                                         │
                                         ▼
+                             ┌──────────────────────┐
+                             │                      │
+                             │ /ai-factory.verify   │
+                             │    (optional)        │
+                             │                      │
+                             │ Check completeness   │
+                             │ Build / test / lint   │
+                             │    ↓                 │
+                             │ → /security-checklist│
+                             │ → /review            │
+                             │                      │
+                             └──────────┬───────────┘
+                                        │
+                                        ▼
                              ┌─────────────────────┐
                              │                     │
                              │ /ai-factory.commit  │
@@ -95,6 +109,7 @@ AI Factory provides a set of **workflow skills** that form the core development 
 | `/ai-factory.feature --parallel` | Concurrent features via worktrees | Yes + worktree | User runs `/ai-factory.task` in worktree |
 | `/ai-factory.improve` | Refine plan before implementation | No | No (improves existing) |
 | `/ai-factory.fix` | Bug fixes, errors, hotfixes | No | No (direct fix) |
+| `/ai-factory.verify` | Post-implementation quality check | No | No (reads existing) |
 
 ## Workflow Skills
 
@@ -135,6 +150,15 @@ Second-pass analysis. Finds missing tasks (migrations, configs, middleware), fix
 
 Reads past patches from `.ai-factory/patches/` to learn from previous mistakes, then executes tasks one by one with commit checkpoints. If the plan has `Docs: yes`, runs `/ai-factory.docs` after completion.
 
+### `/ai-factory.verify [--strict]` — check completeness
+
+```
+/ai-factory.verify          # Verify implementation against plan
+/ai-factory.verify --strict # Strict mode — zero tolerance for gaps
+```
+
+Optional step after `/ai-factory.implement`. Goes through every task in the plan and verifies the code actually implements it. Checks build, tests, lint, looks for leftover TODOs, undocumented env vars, and plan-vs-code drift. Offers to fix any gaps found. At the end, suggests running `/ai-factory.security-checklist` and `/ai-factory.review`. Use `--strict` before merging to main.
+
 ### `/ai-factory.fix <bug description>` — fix and learn
 
 ```
@@ -154,7 +178,7 @@ Reads all accumulated patches, analyzes project patterns, and proposes targeted 
 
 ---
 
-For full details on all skills including utility commands (`/ai-factory.docs`, `/ai-factory.commit`, `/ai-factory.skill-generator`, `/ai-factory.security-checklist`), see [Core Skills](skills.md).
+For full details on all skills including utility commands (`/ai-factory.docs`, `/ai-factory.commit`, `/ai-factory.verify`, `/ai-factory.skill-generator`, `/ai-factory.security-checklist`), see [Core Skills](skills.md).
 
 ## Why Spec-Driven?
 

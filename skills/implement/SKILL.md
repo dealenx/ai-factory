@@ -231,13 +231,28 @@ Files modified:
 - src/api/products/search.ts (created)
 - src/types/search.ts (created)
 
-Ready to commit? Use:
-/ai-factory.commit
+What's next?
+
+1. 🔍 /ai-factory.verify — Verify nothing was missed (recommended)
+2. 💾 /ai-factory.commit — Commit the changes directly
 
 > **Tip:** After committing, it's recommended to start a **new session**
 > (or at least run `/clear`) before continuing with other tasks.
 > This frees up context and avoids confusion from the previous implementation.
 ```
+
+**Suggest verification:**
+
+```
+AskUserQuestion: All tasks complete. Run verification?
+
+Options:
+1. Verify first — Run /ai-factory.verify to check completeness (recommended)
+2. Skip to commit — Go straight to /ai-factory.commit
+```
+
+If user chooses "Verify first" → suggest invoking `/ai-factory.verify`.
+If user chooses "Skip to commit" → suggest invoking `/ai-factory.commit`.
 
 **Check if documentation needs updating:**
 

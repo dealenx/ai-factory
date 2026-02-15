@@ -47,6 +47,7 @@ your-project/
 │   │   ├── implement/
 │   │   ├── commit/
 │   │   ├── build-automation/
+│   │   ├── verify/
 │   │   ├── docs/
 │   │   ├── review/
 │   │   └── skill-generator/
