@@ -96,6 +96,14 @@ const AGENT_REGISTRY: Record<string, AgentConfig> = {
     settingsFile: '.kilocode/mcp.json',
     supportsMcp: true,
   },
+  antigravity: {
+    id: 'antigravity',
+    displayName: 'Antigravity',
+    configDir: '.agent',
+    skillsDir: '.agent/skills',
+    settingsFile: null,
+    supportsMcp: false,
+  },
   opencode: {
     id: 'opencode',
     displayName: 'OpenCode',

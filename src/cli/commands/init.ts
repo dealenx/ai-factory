@@ -5,6 +5,7 @@ import { installSkills } from '../../core/installer.js';
 import { createDefaultConfig, saveConfig, configExists } from '../../core/config.js';
 import { configureMcp, getMcpInstructions } from '../../core/mcp.js';
 import { getAgentConfig } from '../../core/agents.js';
+import { getTransformer } from '../../core/transformer.js';
 
 export async function initCommand(): Promise<void> {
   const projectDir = process.cwd();
@@ -74,10 +75,19 @@ export async function initCommand(): Promise<void> {
     }
 
     const agentConfig = getAgentConfig(answers.agent);
+    const transformer = getTransformer(answers.agent);
     console.log(chalk.bold('\nNext steps:'));
-    console.log(chalk.dim(`  1. Open ${agentConfig.displayName} in this directory`));
-    console.log(chalk.dim('  2. Run /ai-factory to analyze project and generate stack-specific skills'));
-    console.log(chalk.dim('  3. Use /ai-factory.feature to start new features, /ai-factory.commit to commit'));
+
+    const welcomeMessage = transformer.getWelcomeMessage?.();
+    if (welcomeMessage) {
+      for (const line of welcomeMessage) {
+        console.log(chalk.dim(`  ${line}`));
+      }
+    } else {
+      console.log(chalk.dim(`  1. Open ${agentConfig.displayName} in this directory`));
+      console.log(chalk.dim('  2. Run /ai-factory to analyze project and generate stack-specific skills'));
+      console.log(chalk.dim('  3. Use /ai-factory.feature to start new features, /ai-factory.commit to commit'));
+    }
     console.log('');
 
   } catch (error) {

@@ -1,8 +1,9 @@
 import path from 'path';
-import { copyDirectory, getSkillsDir, ensureDir, listDirectories } from '../utils/fs.js';
+import { copyDirectory, getSkillsDir, ensureDir, listDirectories, readTextFile, writeTextFile } from '../utils/fs.js';
 import type { AiFactoryConfig } from './config.js';
 import { getAgentConfig } from './agents.js';
-import { processSkillTemplates } from './template.js';
+import { processSkillTemplates, buildTemplateVars, processTemplate } from './template.js';
+import { getTransformer } from './transformer.js';
 
 export interface InstallOptions {
   projectDir: string;
@@ -10,6 +11,37 @@ export interface InstallOptions {
   skills: string[];
   stack: string | null;
   agentId: string;
+}
+
+async function installSkillWithTransformer(
+  sourceSkillDir: string,
+  skillName: string,
+  projectDir: string,
+  skillsDir: string,
+  agentId: string,
+  agentConfig: ReturnType<typeof getAgentConfig>,
+): Promise<void> {
+  const transformer = getTransformer(agentId);
+  const skillMdPath = path.join(sourceSkillDir, 'SKILL.md');
+  const content = await readTextFile(skillMdPath);
+  if (!content) {
+    throw new Error(`SKILL.md not found in ${sourceSkillDir}`);
+  }
+
+  const result = transformer.transform(skillName, content);
+  const vars = buildTemplateVars(agentConfig);
+
+  if (result.flat) {
+    const targetPath = path.join(projectDir, agentConfig.configDir, result.targetDir, result.targetName);
+    await writeTextFile(targetPath, processTemplate(result.content, vars));
+  } else {
+    const targetSkillDir = path.join(projectDir, skillsDir, result.targetDir);
+    await copyDirectory(sourceSkillDir, targetSkillDir);
+    if (result.content !== content) {
+      await writeTextFile(path.join(targetSkillDir, 'SKILL.md'), result.content);
+    }
+    await processSkillTemplates(targetSkillDir, agentConfig);
+  }
 }
 
 export async function installSkills(options: InstallOptions): Promise<string[]> {
@@ -24,11 +56,9 @@ export async function installSkills(options: InstallOptions): Promise<string[]> 
 
   for (const skill of skills) {
     const sourceSkillDir = path.join(packageSkillsDir, skill);
-    const targetSkillDir = path.join(targetDir, skill);
 
     try {
-      await copyDirectory(sourceSkillDir, targetSkillDir);
-      await processSkillTemplates(targetSkillDir, agentConfig);
+      await installSkillWithTransformer(sourceSkillDir, skill, projectDir, skillsDir, agentId, agentConfig);
       installedSkills.push(skill);
     } catch (error) {
       console.warn(`Warning: Could not install skill "${skill}": ${error}`);
@@ -41,15 +71,18 @@ export async function installSkills(options: InstallOptions): Promise<string[]> 
       const templateSkills = await listDirectories(templateDir);
       for (const templateSkill of templateSkills) {
         const sourceDir = path.join(templateDir, templateSkill);
-        const targetSkillDir = path.join(targetDir, templateSkill);
 
-        await copyDirectory(sourceDir, targetSkillDir);
-        await processSkillTemplates(targetSkillDir, agentConfig);
+        await installSkillWithTransformer(sourceDir, templateSkill, projectDir, skillsDir, agentId, agentConfig);
         installedSkills.push(`${stack}/${templateSkill}`);
       }
     } catch {
       // Template not found, skip
     }
+  }
+
+  const transformer = getTransformer(agentId);
+  if (transformer.postInstall) {
+    await transformer.postInstall(projectDir);
   }
 
   return installedSkills;
@@ -67,13 +100,9 @@ export async function getAvailableTemplates(): Promise<string[]> {
 }
 
 export async function updateSkills(config: AiFactoryConfig, projectDir: string): Promise<string[]> {
-  // Get all available base skills from package
   const availableSkills = await getAvailableSkills();
-
-  // Get custom skills (template-generated or external) to preserve in config
   const customSkills = config.installedSkills.filter(s => s.includes('/'));
 
-  // Install all available base skills (new + existing)
   const installedBaseSkills = await installSkills({
     projectDir,
     skillsDir: config.skillsDir,
@@ -82,6 +111,5 @@ export async function updateSkills(config: AiFactoryConfig, projectDir: string):
     agentId: config.agent,
   });
 
-  // Return base skills + preserved custom skills
   return [...installedBaseSkills, ...customSkills];
 }

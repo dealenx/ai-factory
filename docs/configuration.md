@@ -18,7 +18,7 @@
 }
 ```
 
-The `agent` field can be any supported agent ID: `claude`, `cursor`, `windsurf`, `roocode`, `kilocode`, `opencode`, `warp`, `zencoder`, `codex`, `copilot`, `gemini`, `junie`, or `universal`. The `skillsDir` is set automatically based on the chosen agent.
+The `agent` field can be any supported agent ID: `claude`, `cursor`, `windsurf`, `roocode`, `kilocode`, `antigravity`, `opencode`, `warp`, `zencoder`, `codex`, `copilot`, `gemini`, `junie`, or `universal`. The `skillsDir` is set automatically based on the chosen agent.
 
 ## MCP Configuration
 

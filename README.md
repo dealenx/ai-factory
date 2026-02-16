@@ -21,7 +21,7 @@ ai-factory init
 - **Spec-driven development** — AI follows plans, not random exploration. Predictable, resumable, reviewable
 - **Community skills** — leverage [skills.sh](https://skills.sh) ecosystem or generate custom skills
 - **Works with your stack** — Next.js, Laravel, Django, Express, and more
-- **Multi-agent support** — Claude Code, Cursor, Windsurf, Roo Code, Kilo Code, OpenCode, Warp, Zencoder, Codex CLI, GitHub Copilot, Gemini CLI, Junie, or [any agent](docs/getting-started.md#supported-agents)
+- **Multi-agent support** — Claude Code, Cursor, Windsurf, Roo Code, Kilo Code, Antigravity, OpenCode, Warp, Zencoder, Codex CLI, GitHub Copilot, Gemini CLI, Junie, or [any agent](docs/getting-started.md#supported-agents)
 
 ---
 
@@ -119,6 +119,7 @@ AI Factory can generate and maintain your project docs with a single command:
 - [Zencoder](https://zencoder.ai) - AI coding agent for VS Code and JetBrains
 - [Codex CLI](https://github.com/openai/codex) - OpenAI's coding agent
 - [Gemini CLI](https://github.com/google-gemini/gemini-cli) - Google's coding agent
+- [Antigravity](https://antigravity.dev) - AI coding agent
 - [Junie](https://www.jetbrains.com/junie/) - JetBrains' AI coding agent
 
 ## License

@@ -22,6 +22,7 @@ AI Factory works with any AI coding agent. During `ai-factory init`, you choose 
 | Windsurf | `.windsurf/` | `.windsurf/skills/` |
 | Roo Code | `.roo/` | `.roo/skills/` |
 | Kilo Code | `.kilocode/` | `.kilocode/skills/` |
+| Antigravity | `.agent/` | `.agent/skills/`, `.agent/workflows/` |
 | OpenCode | `.opencode/` | `.opencode/skills/` |
 | Warp | `.warp/` | `.warp/skills/` |
 | Zencoder | `.zencoder/` | `.zencoder/skills/` |
