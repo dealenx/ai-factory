@@ -153,7 +153,7 @@ Install anyway? [y/N]
 - `/ai-factory.skill-generator <url> [url2] [url3]...` - **Learn Mode**: study URLs and generate a skill from them
 - `/ai-factory.skill-generator search <query>` - Search existing skills on skills.sh for inspiration
 - `/ai-factory.skill-generator scan <path>` - **Security scan**: run two-level security check on a skill
-- `/ai-factory.skill-generator validate <path>` - Validate an existing skill
+- `/ai-factory.skill-generator validate <path>` - **Full validation**: structure check + two-level security scan
 - `/ai-factory.skill-generator template <type>` - Get a template (basic, task, reference, visual)
 
 ## Argument Detection
@@ -164,7 +164,7 @@ Install anyway? [y/N]
 Check $ARGUMENTS:
 ├── Starts with "scan "  → Security Scan Mode (see below)
 ├── Starts with "search " → Search skills.sh
-├── Starts with "validate " → Validate skill structure
+├── Starts with "validate " → Full Validation Mode (structure + security)
 ├── Starts with "template " → Show template
 ├── Contains URLs (http:// or https://) → Learn Mode
 └── Otherwise → Standard generation workflow
@@ -211,6 +211,69 @@ When `$ARGUMENTS` starts with `scan`:
      Level 2: All instructions align with stated purpose
 
      Safe to use.
+     ```
+
+### Validate Mode
+
+**Trigger:** `/ai-factory.skill-generator validate <path>`
+
+When `$ARGUMENTS` starts with `validate`:
+
+1. Extract the path (everything after "validate ")
+2. **Structure check** — verify:
+   - [ ] `SKILL.md` exists in the directory
+   - [ ] name matches directory name
+   - [ ] name is lowercase with hyphens only
+   - [ ] description explains what AND when
+   - [ ] frontmatter has no YAML syntax errors
+   - [ ] body is under 500 lines
+   - [ ] all file references use relative paths
+3. **Security scan — Level 1** (automated):
+   ```bash
+   python3 ~/{{skills_dir}}/skill-generator/scripts/security-scan.py <path>
+   ```
+   Capture exit code and full output.
+4. **Security scan — Level 2** (semantic):
+   Read ALL files in the skill directory (SKILL.md + references, scripts, templates).
+   Evaluate semantic intent: does every instruction serve the stated purpose?
+   Apply anti-manipulation rules from the "CRITICAL: Security Scanning" section above.
+5. **Combined report** — single output with both results:
+   - If structure issues found OR security BLOCKED:
+     ```
+     ❌ FAIL: <skill-name>
+
+     Structure:
+     - [FAIL] name "Foo" is not lowercase-hyphenated
+     - [PASS] description present
+     - ...
+
+     Security (Level 1): <N> critical, <M> warnings
+     Security (Level 2): <your findings>
+
+     Fix the issues above before using this skill.
+     ```
+   - If only warnings (structure or security):
+     ```
+     ⚠️ WARNINGS: <skill-name>
+
+     Structure:
+     - [WARN] body is 480 lines (approaching 500 limit)
+     - all other checks passed
+
+     Security (Level 1): <M> warnings
+     Security (Level 2): No suspicious intent detected
+
+     Review warnings above. Skill is usable but could be improved.
+     ```
+   - If everything passes:
+     ```
+     ✅ PASS: <skill-name>
+
+     Structure: All checks passed
+     Security (Level 1): No threats detected
+     Security (Level 2): All instructions align with stated purpose
+
+     Skill is valid and safe to use.
      ```
 
 ### Learn Mode
