@@ -11,7 +11,7 @@
     {
       "id": "claude",
       "skillsDir": ".claude/skills",
-      "installedSkills": ["ai-factory", "ai-factory-plan", "ai-factory-improve", "ai-factory-implement", "ai-factory-commit", "ai-factory-build-automation"],
+      "installedSkills": ["aif", "aif-plan", "aif-improve", "aif-implement", "aif-commit", "aif-build-automation"],
       "mcp": {
         "github": true,
         "postgres": false,
@@ -22,7 +22,7 @@
     {
       "id": "codex",
       "skillsDir": ".codex/skills",
-      "installedSkills": ["ai-factory", "ai-factory-plan", "ai-factory-implement"],
+      "installedSkills": ["aif", "aif-plan", "aif-implement"],
       "mcp": {
         "github": false,
         "postgres": false,
@@ -57,28 +57,28 @@ After initialization (example for Claude Code — other agents use their own dir
 your-project/
 ├── .claude/                   # Agent config dir (varies: .cursor/, .codex/, .ai/, etc.)
 │   ├── skills/
-│   │   ├── ai-factory/
-│   │   ├── ai-factory-plan/
-│   │   ├── ai-factory-improve/
-│   │   ├── ai-factory-implement/
-│   │   ├── ai-factory-commit/
-│   │   ├── ai-factory-dockerize/
-│   │   ├── ai-factory-build-automation/
-│   │   ├── ai-factory-verify/
-│   │   ├── ai-factory-docs/
-│   │   ├── ai-factory-review/
-│   │   └── ai-factory-skill-generator/
+│   │   ├── aif/
+│   │   ├── aif-plan/
+│   │   ├── aif-improve/
+│   │   ├── aif-implement/
+│   │   ├── aif-commit/
+│   │   ├── aif-dockerize/
+│   │   ├── aif-build-automation/
+│   │   ├── aif-verify/
+│   │   ├── aif-docs/
+│   │   ├── aif-review/
+│   │   └── aif-skill-generator/
 │   └── settings.local.json    # MCP config (Claude/Cursor, gitignored)
 ├── .ai-factory/               # AI Factory working directory
 │   ├── DESCRIPTION.md         # Project specification
 │   ├── ARCHITECTURE.md        # Architecture decisions and guidelines
-│   ├── PLAN.md                # Current plan (from /ai-factory-plan fast)
-│   ├── SECURITY.md            # Ignored security items (from /ai-factory-security-checklist ignore)
-│   ├── changes/               # Plans from /ai-factory-plan full
+│   ├── PLAN.md                # Current plan (from /aif-plan fast)
+│   ├── SECURITY.md            # Ignored security items (from /aif-security-checklist ignore)
+│   ├── plans/                 # Plans from /aif-plan full
 │   │   └── <branch-name>.md
-│   ├── patches/               # Self-improvement patches (from /ai-factory-fix)
+│   ├── patches/               # Self-improvement patches (from /aif-fix)
 │   │   └── 2026-02-07-14.30.md
-│   └── evolutions/            # Evolution logs (from /ai-factory-evolve)
+│   └── evolutions/            # Evolution logs (from /aif-evolve)
 │       └── 2026-02-08-10.00.md
 └── .ai-factory.json           # AI Factory config
 ```

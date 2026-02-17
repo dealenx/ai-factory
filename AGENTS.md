@@ -7,7 +7,7 @@
 **AI Factory** (v2) is an npm package + skill system that automates AI agent context setup for projects. It provides:
 
 1. **CLI tool** (`ai-factory init/update/upgrade`) — installs skills and configures MCP
-2. **Built-in skills** (19 skills, all `ai-factory-*` prefixed) — workflow commands for spec-driven development
+2. **Built-in skills** (19 skills, all `aif-*` prefixed) — workflow commands for spec-driven development
 3. **Spec-driven workflow** — structured approach: plan → implement → commit
 4. **Multi-agent support** — 14 agents (Claude Code, Cursor, Windsurf, Roo Code, Kilo Code, Antigravity, OpenCode, Warp, Zencoder, Codex CLI, GitHub Copilot, Gemini CLI, Junie, Universal)
 
@@ -23,26 +23,26 @@ ai-factory/
 │   │   └── transformers/   # default.ts, antigravity.ts, kilocode.ts
 │   └── utils/              # fs.ts
 ├── skills/                 # Built-in skills (copied to user projects)
-│   ├── ai-factory/                    # Main setup skill
-│   ├── ai-factory-architecture/       # Architecture patterns
-│   ├── ai-factory-best-practices/     # Code quality guidelines
-│   ├── ai-factory-build-automation/   # Makefile/Taskfile/Justfile generator
-│   ├── ai-factory-ci/                 # GitHub Actions / GitLab CI generator
-│   ├── ai-factory-commit/             # Conventional commits
-│   ├── ai-factory-deploy/             # Deployment helper
-│   ├── ai-factory-dockerize/          # Docker/compose generator
-│   ├── ai-factory-docs/               # Documentation generation & maintenance
-│   ├── ai-factory-evolve/             # Self-improve skills based on context
-│   ├── ai-factory-fix/                # Quick bug fixes (no plans)
-│   ├── ai-factory-implement/          # Execute plan tasks
-│   ├── ai-factory-improve/            # Plan refinement (second iteration)
-│   ├── ai-factory-plan/               # Plan implementation (fast/full modes)
-│   ├── ai-factory-review/             # Code review
-│   ├── ai-factory-roadmap/            # Strategic project roadmap
-│   ├── ai-factory-rules/              # Project rules and conventions
-│   ├── ai-factory-security-checklist/ # Security audit
-│   ├── ai-factory-skill-generator/    # Generate new skills
-│   ├── ai-factory-verify/             # Verify implementation against plan
+│   ├── aif/                           # Main setup skill
+│   ├── aif-architecture/       # Architecture patterns
+│   ├── aif-best-practices/     # Code quality guidelines
+│   ├── aif-build-automation/   # Makefile/Taskfile/Justfile generator
+│   ├── aif-ci/                 # GitHub Actions / GitLab CI generator
+│   ├── aif-commit/             # Conventional commits
+│   ├── aif-deploy/             # Deployment helper
+│   ├── aif-dockerize/          # Docker/compose generator
+│   ├── aif-docs/               # Documentation generation & maintenance
+│   ├── aif-evolve/             # Self-improve skills based on context
+│   ├── aif-fix/                # Quick bug fixes (no plans)
+│   ├── aif-implement/          # Execute plan tasks
+│   ├── aif-improve/            # Plan refinement (second iteration)
+│   ├── aif-plan/               # Plan implementation (fast/full modes)
+│   ├── aif-review/             # Code review
+│   ├── aif-roadmap/            # Strategic project roadmap
+│   ├── aif-rules/              # Project rules and conventions
+│   ├── aif-security-checklist/ # Security audit
+│   ├── aif-skill-generator/    # Generate new skills
+│   ├── aif-verify/             # Verify implementation against plan
 │   └── _templates/                    # Stack-specific templates
 ├── scripts/                # test-skills.sh
 ├── mcp/                    # MCP server templates
@@ -61,18 +61,18 @@ ai-factory/
 All AI Factory files in user projects go to `.ai-factory/`:
 - `.ai-factory/DESCRIPTION.md` — project specification
 - `.ai-factory/ARCHITECTURE.md` — architecture decisions and guidelines
-- `.ai-factory/PLAN.md` — task plan (from /ai-factory-plan fast)
-- `.ai-factory/changes/<branch>.md` — plans (from /ai-factory-plan full)
+- `.ai-factory/PLAN.md` — task plan (from /aif-plan fast)
+- `.ai-factory/plans/<branch>.md` — plans (from /aif-plan full)
 
 ### Skill Naming (v2)
-All skills use `ai-factory-` prefix (v1 used bare names like `commit`, `feature`):
-- `/ai-factory` — main setup
-- `/ai-factory-plan`
-- `/ai-factory-implement`
-- `/ai-factory-roadmap`
-- `/ai-factory-rules`
-- `/ai-factory-commit`
-- `/ai-factory-docs`
+All skills use `aif-` prefix (v1 used bare names like `commit`, `feature`):
+- `/aif` — main setup
+- `/aif-plan`
+- `/aif-implement`
+- `/aif-roadmap`
+- `/aif-rules`
+- `/aif-commit`
+- `/aif-docs`
 - etc.
 
 The `ai-factory upgrade` command migrates from v1 bare names to v2 prefixed names.
@@ -80,7 +80,7 @@ The `ai-factory upgrade` command migrates from v1 bare names to v2 prefixed name
 ## Workflow Logic
 
 ```
-/ai-factory (3 scenarios)
+/aif (3 scenarios)
     ↓
 Check: has arguments? has project files?
     ↓
@@ -95,11 +95,11 @@ Check: has arguments? has project files?
 │   → Ask "What are you building?" → Stack selection → Setup  │
 └─────────────────────────────────────────────────────────────┘
     ↓
-/ai-factory-architecture → Generate ARCHITECTURE.md
+/aif-architecture → Generate ARCHITECTURE.md
     ↓
 STOP (does NOT implement)
 
-/ai-factory-roadmap [vision or requirements]
+/aif-roadmap [vision or requirements]
     ↓
 Reads .ai-factory/DESCRIPTION.md + ARCHITECTURE.md for context
     ↓
@@ -108,13 +108,13 @@ Subsequent → review progress, add/reprioritize/mark milestones done
     ↓
 ROADMAP.md = strategic checklist of high-level goals
 
-/ai-factory-plan [fast|full] <description>
+/aif-plan [fast|full] <description>
     ↓
 Reads .ai-factory/DESCRIPTION.md + ARCHITECTURE.md for context
     ↓
 fast → no branch, saves to .ai-factory/PLAN.md
 full → creates git branch, asks: tests? logging? docs?
-       saves to .ai-factory/changes/<branch>.md
+       saves to .ai-factory/plans/<branch>.md
     ↓
 Explores codebase
     ↓
@@ -122,7 +122,7 @@ Creates tasks with TaskCreate
     ↓
 For 5+ tasks: includes commit checkpoints
 
-/ai-factory-implement
+/aif-implement
     ↓
 Reads .ai-factory/DESCRIPTION.md + ARCHITECTURE.md for context
     ↓
@@ -138,7 +138,7 @@ Checks .ai-factory/ROADMAP.md → marks completed milestones
     ↓
 Offers to delete PLAN.md when done (keeps feature-*.md)
 
-/ai-factory-fix <bug description>
+/aif-fix <bug description>
     ↓
 Reads .ai-factory/DESCRIPTION.md + patches for context
     ↓
@@ -152,7 +152,7 @@ Creates self-improvement patch in .ai-factory/patches/
     ↓
 NO plans, NO reports
 
-/ai-factory-evolve [skill-name|"all"]
+/aif-evolve [skill-name|"all"]
     ↓
 Reads .ai-factory/DESCRIPTION.md + all patches
     ↓
@@ -202,7 +202,7 @@ ai-factory init
 # Update skills after changes
 ai-factory update
 
-# Upgrade from v1 to v2 (removes old bare-named skills, installs ai-factory-* prefixed)
+# Upgrade from v1 to v2 (removes old bare-named skills, installs aif-* prefixed)
 ai-factory upgrade
 ```
 
@@ -223,11 +223,11 @@ ai-factory upgrade
 | `src/core/transformer.ts` | AgentTransformer interface + registry |
 | `src/core/transformers/` | Per-agent skill format adapters |
 | `scripts/test-skills.sh` | Test suite (validate + negative tests + integrity) |
-| `skills/ai-factory-*/SKILL.md` | Skill instructions |
+| `skills/aif-*/SKILL.md` | Skill instructions |
 
 ## Important Rules
 
-1. **Skills don't implement** - `/ai-factory` only sets up context
+1. **Skills don't implement** - `/aif` only sets up context
 2. **DESCRIPTION.md is source of truth** - all skills read it for context
 3. **Plans go to .ai-factory/** - keeps project root clean
 4. **Search skills.sh first** - don't reinvent existing skills
@@ -271,12 +271,12 @@ docs/
 | Security scanning changed | `docs/security.md` |
 | Plan file format changed | `docs/plan-files.md` |
 | New CLI command | `docs/getting-started.md` (CLI Commands section) |
-| Documentation conventions changed | `skills/ai-factory-docs/SKILL.md` (principles and templates) |
+| Documentation conventions changed | `skills/aif-docs/SKILL.md` (principles and templates) |
 
 ## Common Changes
 
 ### Adding a new skill
-1. Create `skills/ai-factory-new-skill/SKILL.md` (must use `ai-factory-` prefix)
+1. Create `skills/aif-new-skill/SKILL.md` (must use `aif-` prefix)
 2. Add to `getAvailableSkills()` if needed
 3. Rebuild: `npm run build`
 4. Validate: `npm test`
@@ -337,7 +337,7 @@ npm test
 ```
 
 Runs `scripts/test-skills.sh` which validates:
-1. **All skills pass validation** — runs `validate.sh` on every `skills/ai-factory-*/`
+1. **All skills pass validation** — runs `validate.sh` on every `skills/aif-*/`
 2. **Negative tests** — ensures validator correctly rejects: dotted names, name/dir mismatch, missing name, consecutive hyphens, uppercase names, oversized frontmatter, unquoted bracket hints
 3. **Codebase integrity** — no dotted `name:` fields in skills, no dotted slash-command invocations in docs
 
@@ -348,7 +348,7 @@ After changes, verify:
 - [ ] `ai-factory init` works in empty directory
 - [ ] `ai-factory update` updates existing skills
 - [ ] `ai-factory upgrade` migrates v1 → v2 correctly
-- [ ] `/ai-factory` in Claude Code shows interactive stack selection
-- [ ] `/ai-factory-plan` creates branch + plan file
-- [ ] `/ai-factory-implement` finds and executes plan
+- [ ] `/aif` in Claude Code shows interactive stack selection
+- [ ] `/aif-plan` creates branch + plan file
+- [ ] `/aif-implement` finds and executes plan
 - [ ] Skills read `.ai-factory/DESCRIPTION.md`

@@ -6,7 +6,7 @@ import { installSkills, getAvailableSkills } from '../../core/installer.js';
 import { getAgentConfig } from '../../core/agents.js';
 import { fileExists, removeDirectory, removeFile } from '../../utils/fs.js';
 
-// Old v1 skill directory names that were renamed to ai-factory-* in v2
+// Old v1 skill directory names that were renamed to aif-* in v2
 const OLD_SKILL_NAMES = [
   'architecture',
   'best-practices',
@@ -26,6 +26,33 @@ const OLD_SKILL_NAMES = [
   'skill-generator',
   'task',
   'verify',
+];
+
+// Old v2 skill directory names before aif-* migration
+const OLD_AIF_PREFIX_SKILL_NAMES = [
+  'ai-factory',
+  'ai-factory-architecture',
+  'ai-factory-best-practices',
+  'ai-factory-build-automation',
+  'ai-factory-ci',
+  'ai-factory-commit',
+  'ai-factory-deploy',
+  'ai-factory-dockerize',
+  'ai-factory-docs',
+  'ai-factory-evolve',
+  'ai-factory-fix',
+  'ai-factory-implement',
+  'ai-factory-improve',
+  'ai-factory-plan',
+  'ai-factory-review',
+  'ai-factory-roadmap',
+  'ai-factory-rules',
+  'ai-factory-security-checklist',
+  'ai-factory-skill-generator',
+  'ai-factory-verify',
+  // Transitional names that were removed earlier
+  'ai-factory-task',
+  'ai-factory-feature',
 ];
 
 // Old workflow skills stored as flat .md files by Antigravity transformer
@@ -59,13 +86,19 @@ export async function upgradeCommand(): Promise<void> {
     process.exit(1);
   }
 
-  // Step 1: Rename .ai-factory/features/ → .ai-factory/changes/
+  // Step 1: Migrate legacy plan directories to .ai-factory/plans/
   const featuresDir = path.join(projectDir, '.ai-factory', 'features');
   const changesDir = path.join(projectDir, '.ai-factory', 'changes');
+  const plansDir = path.join(projectDir, '.ai-factory', 'plans');
 
-  if (await fileExists(featuresDir) && !(await fileExists(changesDir))) {
-    await fs.move(featuresDir, changesDir);
-    console.log(chalk.green('✓ Renamed .ai-factory/features/ → .ai-factory/changes/\n'));
+  if (await fileExists(changesDir) && !(await fileExists(plansDir))) {
+    await fs.move(changesDir, plansDir);
+    console.log(chalk.green('✓ Renamed .ai-factory/changes/ → .ai-factory/plans/\n'));
+  }
+
+  if (await fileExists(featuresDir) && !(await fileExists(plansDir))) {
+    await fs.move(featuresDir, plansDir);
+    console.log(chalk.green('✓ Renamed .ai-factory/features/ → .ai-factory/plans/\n'));
   }
 
   const availableSkills = await getAvailableSkills();
@@ -98,8 +131,14 @@ export async function upgradeCommand(): Promise<void> {
       }
     }
 
-    // Remove old ai-factory-task and ai-factory-feature skills
-    for (const oldSkill of ['ai-factory-task', 'ai-factory-feature']) {
+    // Remove old aif-task, aif-feature, and ai-factory-* skills
+    const obsoleteSkills = [
+      'aif-task', 'aif-feature',
+      ...OLD_SKILL_NAMES.map(n => `ai-factory-${n}`),
+      ...OLD_AIF_PREFIX_SKILL_NAMES,
+    ];
+
+    for (const oldSkill of obsoleteSkills) {
       const oldDir = path.join(skillsDir, oldSkill);
       if (await fileExists(oldDir)) {
         await removeDirectory(oldDir);

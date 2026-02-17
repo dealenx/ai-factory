@@ -47,13 +47,13 @@ cd my-project
 ai-factory init
 
 # 4. Open your AI agent (Claude Code, Cursor, etc.) and run:
-/ai-factory
+/aif
 
 # 5. Start building
-/ai-factory-plan Add user authentication with OAuth
+/aif-plan Add user authentication with OAuth
 ```
 
-From here, AI Factory creates a branch, builds a plan, and you run `/ai-factory-implement` to execute it step by step.
+From here, AI Factory creates a branch, builds a plan, and you run `/aif-implement` to execute it step by step.
 
 ## CLI Commands
 
@@ -64,7 +64,7 @@ ai-factory init
 # Update skills to latest version
 ai-factory update
 
-# Upgrade from v1 to v2 (removes old bare-named skills, installs ai-factory-* prefixed)
+# Upgrade from v1 to v2 (removes old bare-named skills, installs aif-* prefixed)
 ai-factory upgrade
 ```
 

@@ -72,18 +72,18 @@ A skill with **any CRITICAL threat is never installed**. No exceptions, no overr
 
 ```bash
 # Scan a skill directory (use your agent's skills path)
-python3 .claude/skills/ai-factory-skill-generator/scripts/security-scan.py ./my-downloaded-skill/
+python3 .claude/skills/aif-skill-generator/scripts/security-scan.py ./my-downloaded-skill/
 
 # Scan a single SKILL.md file
-python3 .claude/skills/ai-factory-skill-generator/scripts/security-scan.py ./my-skill/SKILL.md
+python3 .claude/skills/aif-skill-generator/scripts/security-scan.py ./my-skill/SKILL.md
 
 # For other agents, adjust the path accordingly:
-# python3 .codex/skills/ai-factory-skill-generator/scripts/security-scan.py ./my-skill/
-# python3 .agents/skills/ai-factory-skill-generator/scripts/security-scan.py ./my-skill/
+# python3 .codex/skills/aif-skill-generator/scripts/security-scan.py ./my-skill/
+# python3 .agents/skills/aif-skill-generator/scripts/security-scan.py ./my-skill/
 ```
 
 ## See Also
 
-- [Core Skills](skills.md) — `/ai-factory-security-checklist` for project-level security audits
+- [Core Skills](skills.md) — `/aif-security-checklist` for project-level security audits
 - [Plan Files](plan-files.md) — skill acquisition strategy and how scanning fits in
 - [Configuration](configuration.md) — MCP servers and project structure

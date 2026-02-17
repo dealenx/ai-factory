@@ -16,14 +16,14 @@ export interface AgentTransformer {
 }
 
 export const WORKFLOW_SKILLS = new Set([
-  'ai-factory',
-  'ai-factory-commit',
-  'ai-factory-deploy',
-  'ai-factory-fix',
-  'ai-factory-implement',
-  'ai-factory-improve',
-  'ai-factory-plan',
-  'ai-factory-verify',
+  'aif',
+  'aif-commit',
+  'aif-deploy',
+  'aif-fix',
+  'aif-implement',
+  'aif-improve',
+  'aif-plan',
+  'aif-verify',
 ]);
 
 export function sanitizeName(name: string): string {

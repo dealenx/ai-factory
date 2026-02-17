@@ -15,7 +15,7 @@ Run once per project. Sets up context files that all workflow skills depend on.
 
   ┌──────────────┐      ┌──────────────┐      ┌──────────────────────────┐
   │              │      │   claude     │      │                          │
-  │ ai-factory   │ ───▶ │ (or any AI   │ ───▶ │      /ai-factory         │
+  │ ai-factory   │ ───▶ │ (or any AI   │ ───▶ │      /aif         │
   │    init      │      │    agent)    │      │   (setup context)        │
   │              │      │              │      │                          │
   └──────────────┘      └──────────────┘      │  DESCRIPTION.md          │
@@ -25,7 +25,7 @@ Run once per project. Sets up context files that all workflow skills depend on.
                                                            │
                                                            ▼
                                               ┌──────────────────────────┐
-                                              │ /ai-factory-architecture │
+                                              │ /aif-architecture │
                                               │  (ARCHITECTURE.md)       │
                                               └────────────┬─────────────┘
                                                            │
@@ -33,13 +33,13 @@ Run once per project. Sets up context files that all workflow skills depend on.
                                          │                 │                 │
                                          ▼                 ▼                 ▼
                                   ┌─────────────┐  ┌──────────────┐  ┌─────────────┐
-                                  │/ai-factory- │  │ /ai-factory- │  │/ai-factory- │
+                                  │/aif- │  │ /aif- │  │/aif- │
                                   │   rules     │  │   roadmap    │  │   docs      │
                                   │ (optional)  │  │(recommended) │  │ (optional)  │
                                   └─────────────┘  └──────────────┘  └─────────────┘
 
                                   ┌──────────────┐  ┌─────────────┐  ┌──────────────┐
-                                  │ /ai-factory- │  │/ai-factory- │  │ /ai-factory- │
+                                  │ /aif- │  │/aif- │  │ /aif- │
                                   │  dockerize   │  │    ci       │  │    build-    │
                                   │ (optional)   │  │ (optional)  │  │  automation  │
                                   └──────────────┘  └─────────────┘  │ (optional)   │
@@ -59,12 +59,12 @@ The repeatable development loop. Each skill feeds into the next, sharing context
 
                ┌──────────────────────────┐                         ┌──────────────┐
                │                          │                         │              │
-               │    /ai-factory-plan      │                         │ /ai-factory- │
+               │    /aif-plan      │                         │ /aif- │
                │                          │                         │    fix       │
                │  fast → no branch,       │                         │              │
                │         PLAN.md          │                         │ Bug fixes    │
                │  full → git branch,      │                         │ Optional plan│
-               │         changes/<br>.md  │                         │ With logging │
+               │         plans/<br>.md  │                         │ With logging │
                │                          │                         │              │
                └────────────┬─────────────┘                         └───────┬──────┘
                             │                                               │
@@ -78,7 +78,7 @@ The repeatable development loop. Each skill feeds into the next, sharing context
                                         ▼                                   │
                              ┌─────────────────────┐                        │
                              │                     │                        │
-                             │ /ai-factory-improve │                        │
+                             │ /aif-improve │                        │
                              │    (optional)       │                        │
                              │                     │                        │
                              │ Refine plan with    │                        │
@@ -89,9 +89,9 @@ The repeatable development loop. Each skill feeds into the next, sharing context
                                         ▼                                   │
                              ┌──────────────────────┐                       │
                              │                      │◀── reads patches ─────┘
-                             │ /ai-factory-implement│
+                             │ /aif-implement│
                              │ ──── error?          │
-                             │  ──▶ /ai-factory-fix │
+                             │  ──▶ /aif-fix │
                              │  Execute tasks       │
                              │  Commit checkpoints  │
                              │                      │
@@ -100,21 +100,21 @@ The repeatable development loop. Each skill feeds into the next, sharing context
                                         ▼
                              ┌──────────────────────────────────────┐
                              │                                      │
-                             │ /ai-factory-verify                   │
+                             │ /aif-verify                   │
                              │    (optional)                        │
                              │                                      │
                              │ Check completeness                   │
                              │ Build / test / lint                   │
                              │    ↓                                 │
-                             │ → /ai-factory-security-checklist     │
-                             │ → /ai-factory-review                 │
+                             │ → /aif-security-checklist     │
+                             │ → /aif-review                 │
                              │                                      │
                              └──────────────────┬───────────────────┘
                                         │
                                         ▼
                              ┌─────────────────────┐
                              │                     │
-                             │ /ai-factory-commit  │
+                             │ /aif-commit  │
                              │                     │
                              └──────────┬──────────┘
                                         │
@@ -126,7 +126,7 @@ The repeatable development loop. Each skill feeds into the next, sharing context
                                                         ▼
                                              ┌─────────────────────┐
                                              │                     │
-                                             │ /ai-factory-evolve  │
+                                             │ /aif-evolve  │
                                              │                     │
                                              │ Reads patches +     │
                                              │ project context     │
@@ -141,71 +141,71 @@ The repeatable development loop. Each skill feeds into the next, sharing context
 
 | Command | Use Case | Creates Branch? | Creates Plan? |
 |---------|----------|-----------------|---------------|
-| `/ai-factory-roadmap` | Strategic planning, milestones, long-term vision | No | `.ai-factory/ROADMAP.md` |
-| `/ai-factory-plan fast` | Small tasks, quick fixes, experiments | No | `.ai-factory/PLAN.md` |
-| `/ai-factory-plan full` | Full features, stories, epics | Yes | `.ai-factory/changes/<branch>.md` |
-| `/ai-factory-plan full --parallel` | Concurrent features via worktrees | Yes + worktree | Autonomous end-to-end |
-| `/ai-factory-improve` | Refine plan before implementation | No | No (improves existing) |
-| `/ai-factory-fix` | Bug fixes, errors, hotfixes | No | Optional (`.ai-factory/FIX_PLAN.md`) |
-| `/ai-factory-verify` | Post-implementation quality check | No | No (reads existing) |
+| `/aif-roadmap` | Strategic planning, milestones, long-term vision | No | `.ai-factory/ROADMAP.md` |
+| `/aif-plan fast` | Small tasks, quick fixes, experiments | No | `.ai-factory/PLAN.md` |
+| `/aif-plan full` | Full features, stories, epics | Yes | `.ai-factory/plans/<branch>.md` |
+| `/aif-plan full --parallel` | Concurrent features via worktrees | Yes + worktree | Autonomous end-to-end |
+| `/aif-improve` | Refine plan before implementation | No | No (improves existing) |
+| `/aif-fix` | Bug fixes, errors, hotfixes | No | Optional (`.ai-factory/FIX_PLAN.md`) |
+| `/aif-verify` | Post-implementation quality check | No | No (reads existing) |
 
 ## Workflow Skills
 
 These skills form the development pipeline. Each one feeds into the next.
 
-### `/ai-factory-roadmap [check | vision]` — strategic planning
+### `/aif-roadmap [check | vision]` — strategic planning
 
 ```
-/ai-factory-roadmap                              # Create or update roadmap
-/ai-factory-roadmap SaaS for project management  # Create from vision
-/ai-factory-roadmap check                        # Auto-scan: find completed milestones
+/aif-roadmap                              # Create or update roadmap
+/aif-roadmap SaaS for project management  # Create from vision
+/aif-roadmap check                        # Auto-scan: find completed milestones
 ```
 
-High-level project planning. Creates `.ai-factory/ROADMAP.md` — a strategic checklist of major milestones (not granular tasks). Use `check` to automatically scan the codebase and mark milestones that appear done. `/ai-factory-implement` also checks the roadmap after completing all tasks.
+High-level project planning. Creates `.ai-factory/ROADMAP.md` — a strategic checklist of major milestones (not granular tasks). Use `check` to automatically scan the codebase and mark milestones that appear done. `/aif-implement` also checks the roadmap after completing all tasks.
 
-### `/ai-factory-plan [fast|full] <description>` — plan the work
-
-```
-/ai-factory-plan Add user authentication with OAuth       # Asks which mode
-/ai-factory-plan fast Add product search API              # Quick plan, no branch
-/ai-factory-plan full Add user authentication with OAuth  # Git branch + full plan
-/ai-factory-plan full --parallel Add Stripe checkout      # Parallel worktree
-```
-
-Two modes — **fast** (no branch, saves to `.ai-factory/PLAN.md`) and **full** (creates git branch, asks about testing/logging/docs, saves to `.ai-factory/changes/<branch>.md`). Analyzes requirements, explores codebase for patterns, creates tasks with dependencies. For 5+ tasks, includes commit checkpoints. For parallel work on multiple features, use `full --parallel` to create isolated worktrees.
-
-### `/ai-factory-improve [prompt]` — refine the plan
+### `/aif-plan [fast|full] <description>` — plan the work
 
 ```
-/ai-factory-improve
-/ai-factory-improve add validation and error handling
+/aif-plan Add user authentication with OAuth       # Asks which mode
+/aif-plan fast Add product search API              # Quick plan, no branch
+/aif-plan full Add user authentication with OAuth  # Git branch + full plan
+/aif-plan full --parallel Add Stripe checkout      # Parallel worktree
+```
+
+Two modes — **fast** (no branch, saves to `.ai-factory/PLAN.md`) and **full** (creates git branch, asks about testing/logging/docs, saves to `.ai-factory/plans/<branch>.md`). Analyzes requirements, explores codebase for patterns, creates tasks with dependencies. For 5+ tasks, includes commit checkpoints. For parallel work on multiple features, use `full --parallel` to create isolated worktrees.
+
+### `/aif-improve [prompt]` — refine the plan
+
+```
+/aif-improve
+/aif-improve add validation and error handling
 ```
 
 Second-pass analysis. Finds missing tasks (migrations, configs, middleware), fixes dependencies, removes redundant work. Shows a diff-like report before applying changes.
 
-### `/ai-factory-implement` — execute the plan
+### `/aif-implement` — execute the plan
 
 ```
-/ai-factory-implement        # Continue from where you left off
-/ai-factory-implement 5      # Start from task #5
-/ai-factory-implement status # Check progress
+/aif-implement        # Continue from where you left off
+/aif-implement 5      # Start from task #5
+/aif-implement status # Check progress
 ```
 
-Reads past patches from `.ai-factory/patches/` to learn from previous mistakes, then executes tasks one by one with commit checkpoints. If the plan has `Docs: yes`, runs `/ai-factory-docs` after completion.
+Reads past patches from `.ai-factory/patches/` to learn from previous mistakes, then executes tasks one by one with commit checkpoints. If the plan has `Docs: yes`, runs `/aif-docs` after completion.
 
-### `/ai-factory-verify [--strict]` — check completeness
-
-```
-/ai-factory-verify          # Verify implementation against plan
-/ai-factory-verify --strict # Strict mode — zero tolerance for gaps
-```
-
-Optional step after `/ai-factory-implement`. Goes through every task in the plan and verifies the code actually implements it. Checks build, tests, lint, looks for leftover TODOs, undocumented env vars, and plan-vs-code drift. Offers to fix any gaps found. At the end, suggests running `/ai-factory-security-checklist` and `/ai-factory-review`. Use `--strict` before merging to main.
-
-### `/ai-factory-fix [bug description]` — fix and learn
+### `/aif-verify [--strict]` — check completeness
 
 ```
-/ai-factory-fix TypeError: Cannot read property 'name' of undefined
+/aif-verify          # Verify implementation against plan
+/aif-verify --strict # Strict mode — zero tolerance for gaps
+```
+
+Optional step after `/aif-implement`. Goes through every task in the plan and verifies the code actually implements it. Checks build, tests, lint, looks for leftover TODOs, undocumented env vars, and plan-vs-code drift. Offers to fix any gaps found. At the end, suggests running `/aif-security-checklist` and `/aif-review`. Use `--strict` before merging to main.
+
+### `/aif-fix [bug description]` — fix and learn
+
+```
+/aif-fix TypeError: Cannot read property 'name' of undefined
 ```
 
 Two modes — choose when you invoke:
@@ -214,23 +214,23 @@ Two modes — choose when you invoke:
 
 When a plan exists, run without arguments to execute:
 ```
-/ai-factory-fix    # reads FIX_PLAN.md → applies fix → deletes plan
+/aif-fix    # reads FIX_PLAN.md → applies fix → deletes plan
 ```
 
-Every fix creates a **self-improvement patch** in `.ai-factory/patches/`. Every patch makes future `/ai-factory-implement` and `/ai-factory-fix` smarter.
+Every fix creates a **self-improvement patch** in `.ai-factory/patches/`. Every patch makes future `/aif-implement` and `/aif-fix` smarter.
 
-### `/ai-factory-evolve` — improve skills from experience
+### `/aif-evolve` — improve skills from experience
 
 ```
-/ai-factory-evolve          # Evolve all skills
-/ai-factory-evolve fix      # Evolve only the fix skill
+/aif-evolve          # Evolve all skills
+/aif-evolve fix      # Evolve only the fix skill
 ```
 
 Reads all accumulated patches, analyzes project patterns, and proposes targeted skill improvements. Closes the learning loop: **fix → patch → evolve → better skills → fewer bugs**.
 
 ---
 
-For full details on all skills including utility commands (`/ai-factory-docs`, `/ai-factory-dockerize`, `/ai-factory-build-automation`, `/ai-factory-ci`, `/ai-factory-commit`, `/ai-factory-skill-generator`, `/ai-factory-security-checklist`), see [Core Skills](skills.md).
+For full details on all skills including utility commands (`/aif-docs`, `/aif-dockerize`, `/aif-build-automation`, `/aif-ci`, `/aif-commit`, `/aif-skill-generator`, `/aif-security-checklist`), see [Core Skills](skills.md).
 
 ## Why Spec-Driven?
 

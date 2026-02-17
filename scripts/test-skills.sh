@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-VALIDATOR="$ROOT_DIR/skills/ai-factory-skill-generator/scripts/validate.sh"
+VALIDATOR="$ROOT_DIR/skills/aif-skill-generator/scripts/validate.sh"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -36,8 +36,11 @@ fail() {
 echo -e "\n${BOLD}=== Validate all skills ===${NC}\n"
 
 SKILL_WARNINGS=0
-for skill_dir in "$ROOT_DIR"/skills/ai-factory*/; do
+for skill_dir in "$ROOT_DIR"/skills/*/; do
     skill_name=$(basename "$skill_dir")
+    if [[ "$skill_name" != "aif" && "$skill_name" != aif-* ]]; then
+        continue
+    fi
     OUTPUT=$(bash "$VALIDATOR" "$skill_dir" 2>&1)
     EXIT_CODE=$?
     WARNS=$(echo "$OUTPUT" | grep -c 'WARNING' || true)
@@ -191,17 +194,17 @@ fi
 echo -e "\n${BOLD}=== Codebase integrity checks ===${NC}\n"
 
 # No dotted name: in frontmatter
-DOTTED_NAMES=$(grep -r 'name: ai-factory\.' "$ROOT_DIR/skills/" --include='*.md' 2>/dev/null | wc -l | tr -d ' ' || true)
+DOTTED_NAMES=$(grep -r 'name: aif\.' "$ROOT_DIR/skills/" --include='*.md' 2>/dev/null | wc -l | tr -d ' ' || true)
 if [[ "$DOTTED_NAMES" -eq 0 ]]; then
     pass "no dotted name: fields in skills/"
 else
     fail "found $DOTTED_NAMES dotted name: fields in skills/"
 fi
 
-# No dotted /ai-factory. invocations in markdown
-DOTTED_REFS=$(grep -rE '/ai-factory\.[a-z]' "$ROOT_DIR/skills/" "$ROOT_DIR/docs/" "$ROOT_DIR/README.md" "$ROOT_DIR/AGENTS.md" --include='*.md' 2>/dev/null | grep -v 'ai-factory\.json' | wc -l | tr -d ' ' || true)
+# No dotted /aif. invocations in markdown
+DOTTED_REFS=$(grep -rE '/aif\.[a-z]' "$ROOT_DIR/skills/" "$ROOT_DIR/docs/" "$ROOT_DIR/README.md" "$ROOT_DIR/AGENTS.md" --include='*.md' 2>/dev/null | grep -v 'ai-factory\.json' | wc -l | tr -d ' ' || true)
 if [[ "$DOTTED_REFS" -eq 0 ]]; then
-    pass "no dotted /ai-factory.xxx invocations in docs"
+    pass "no dotted /aif.xxx invocations in docs"
 else
     fail "found $DOTTED_REFS dotted invocations in docs"
 fi

@@ -56,7 +56,7 @@ This will:
 Then open your AI agent and start working:
 
 ```
-/ai-factory
+/aif
 ```
 
 ## Usage
@@ -77,28 +77,28 @@ npx ai-factory init
 ai-factory upgrade
 ```
 
-This removes old bare-named skills (`commit`, `feature`, etc.) and installs new `ai-factory-*` prefixed versions. Custom skills are preserved.
+This removes old bare-named skills (`commit`, `feature`, etc.) and installs new `aif-*` prefixed versions. Custom skills are preserved.
 
 ### Example Workflow
 
 ```bash
 # Plan a feature — creates branch, analyzes codebase, builds step-by-step plan
-/ai-factory-plan Add user authentication with OAuth
+/aif-plan Add user authentication with OAuth
 
 # Optionally refine the plan with deeper analysis
-/ai-factory-improve
+/aif-improve
 
 # Execute the plan — implements tasks one by one, commits at checkpoints
-/ai-factory-implement
+/aif-implement
 
 # Fix a bug — AI learns from every fix and gets smarter over time
-/ai-factory-fix TypeError: Cannot read property 'name' of undefined
+/aif-fix TypeError: Cannot read property 'name' of undefined
 
 # Set up CI pipeline — GitHub Actions or GitLab CI with linting, SA, tests
-/ai-factory-ci github
+/aif-ci github
 
 # Generate project documentation — README + docs/ with topics
-/ai-factory-docs
+/aif-docs
 ```
 
 See the full [Development Workflow](docs/workflow.md) with diagram and decision table.
@@ -108,13 +108,13 @@ See the full [Development Workflow](docs/workflow.md) with diagram and decision 
 AI Factory can generate and maintain your project docs with a single command:
 
 ```bash
-/ai-factory-docs          # Creates README + docs/ structure from your codebase
-/ai-factory-docs --web    # Also generates a static HTML documentation site
+/aif-docs          # Creates README + docs/ structure from your codebase
+/aif-docs --web    # Also generates a static HTML documentation site
 ```
 
 - **Generates docs from scratch** — analyzes your codebase and creates a lean README + detailed `docs/` pages by topic
 - **Cleans up scattered files** — finds loose CONTRIBUTING.md, ARCHITECTURE.md, SETUP.md in your root and consolidates them into a structured `docs/` directory
-- **Keeps docs in sync** — integrates with `/ai-factory-implement` so documentation is updated automatically after each feature
+- **Keeps docs in sync** — integrates with `/aif-implement` so documentation is updated automatically after each feature
 - **Builds a docs website** — `--web` generates a static HTML site with navigation and dark mode, ready to host
 
 ---
