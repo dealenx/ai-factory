@@ -237,15 +237,14 @@ async function detectPythonStack(projectDir: string): Promise<DetectedStack> {
 export function getRecommendedSkills(stack: DetectedStack | null): string[] {
   const baseSkills = [
     'ai-factory',
-    'skill-generator',
-    'feature',
-    'task',
-    'implement',
-    'commit',
-    'review',
-    'best-practices',
-    'architecture',
-    'security-checklist',
+    'ai-factory-skill-generator',
+    'ai-factory-plan',
+    'ai-factory-implement',
+    'ai-factory-commit',
+    'ai-factory-review',
+    'ai-factory-best-practices',
+    'ai-factory-architecture',
+    'ai-factory-security-checklist',
   ];
 
   if (!stack) {
@@ -255,7 +254,7 @@ export function getRecommendedSkills(stack: DetectedStack | null): string[] {
   const skills = [...baseSkills];
 
   if (['nextjs', 'react', 'vue', 'node-api', 'fastapi', 'django', 'flask', 'laravel', 'symfony'].includes(stack.name)) {
-    skills.push('deploy');
+    skills.push('ai-factory-deploy');
   }
 
   return skills;

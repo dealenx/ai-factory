@@ -86,7 +86,7 @@ For each skill, identify what's missing based on collected intelligence:
 Compare patch patterns against skill instructions:
 - Does `/ai-factory-fix` mention the most common error categories from patches? If not → add them
 - Does `/ai-factory-implement` warn about the pitfalls found in patches? If not → add guards
-- Does `/ai-factory-task` include logging/validation requirements for problem areas? If not → enhance
+- Does `/ai-factory-plan` include logging/validation requirements for problem areas? If not → enhance
 - Does `/ai-factory-review` check for the patterns that caused bugs? If not → add checklist items
 
 **3.2: Tech-stack gaps**
@@ -235,10 +235,9 @@ Options:
 |-------|-------------|---------------------|
 | `/ai-factory-fix` | Patches → common errors | "Check for X before accessing Y" |
 | `/ai-factory-implement` | Patches → prevention rules | "When creating models, always validate Z" |
-| `/ai-factory-task` | Patches → logging gaps | "Add validation task for nullable fields" |
+| `/ai-factory-plan` | Patches → logging gaps | "Add validation task for nullable fields" |
 | `/ai-factory-review` | Patches → missed issues | "Check: are all optional relations null-safe?" |
 | `/ai-factory-commit` | Codebase → conventions | "Use project's commit prefix format" |
-| `/ai-factory-feature` | Codebase → patterns | "Default branch prefix based on project convention" |
 
 ## Important Rules
 
@@ -275,7 +274,7 @@ Options:
   "Enable query logging: DB::enableQueryLog() in DEBUG mode"
 → Improvement: Add to /ai-factory-review checklist:
   "- [ ] Eager loading used for related models (no N+1)"
-→ Improvement: Add to /ai-factory-task descriptions:
+→ Improvement: Add to /ai-factory-plan descriptions:
   "Include 'use ->with() for relations' in DB-related tasks"
 ```
 

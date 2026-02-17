@@ -6,19 +6,23 @@
 
 These skills form the core development loop. See [Development Workflow](workflow.md) for the full diagram and how they connect.
 
-### `/ai-factory-feature <description>`
-Starts a new feature:
+### `/ai-factory-plan [fast|full] <description>`
+Plans implementation for a feature or task:
 ```
-/ai-factory-feature Add user authentication with OAuth
+/ai-factory-plan Add user authentication with OAuth       # Asks which mode
+/ai-factory-plan fast Add product search API              # Quick plan, no branch
+/ai-factory-plan full Add user authentication with OAuth  # Git branch + full plan
 ```
-- Creates git branch (`feature/user-authentication`)
-- Asks about testing, logging, and documentation preferences
-- Creates plan file (`feature-user-authentication.md`)
-- Invokes `/ai-factory-task` to create implementation plan
+
+Two modes:
+- **Fast** — no git branch, saves plan to `.ai-factory/PLAN.md`, asks fewer questions
+- **Full** — creates git branch (`feature/user-authentication`), asks about testing/logging/docs, saves plan to `.ai-factory/changes/<branch>.md`
+
+Both modes explore your codebase for patterns, create tasks with dependencies, and include commit checkpoints for 5+ tasks.
 
 **Parallel mode** — work on multiple features simultaneously using `git worktree`:
 ```
-/ai-factory-feature --parallel Add Stripe checkout
+/ai-factory-plan full --parallel Add Stripe checkout
 ```
 - Creates a separate working directory (`../my-project-feature-stripe-checkout`)
 - Copies AI context files (`.ai-factory/`, `.claude/`, `CLAUDE.md`)
@@ -26,8 +30,8 @@ Starts a new feature:
 
 **Manage parallel features:**
 ```
-/ai-factory-feature --list                          # Show all active worktrees
-/ai-factory-feature --cleanup feature/stripe-checkout # Remove worktree and branch
+/ai-factory-plan --list                          # Show all active worktrees
+/ai-factory-plan --cleanup feature/stripe-checkout # Remove worktree and branch
 ```
 
 ### `/ai-factory-roadmap [check | vision or requirements]`
@@ -42,19 +46,8 @@ Creates or updates a strategic project roadmap:
 - **First run** — explores codebase, asks for major goals, generates `.ai-factory/ROADMAP.md`
 - **Subsequent runs** — review progress, add milestones, reprioritize, mark completed
 - **`check`** — automated progress scan: analyzes codebase for evidence of completed milestones, reports done/partial/not started, marks completed with confirmation
-- Milestones are high-level goals (not granular tasks — that's `/ai-factory-task`)
+- Milestones are high-level goals (not granular tasks — that's `/ai-factory-plan`)
 - `/ai-factory-implement` automatically marks roadmap milestones done when work completes
-
-### `/ai-factory-task <description>`
-Creates implementation plan:
-```
-/ai-factory-task Add product search API
-```
-- Analyzes requirements
-- Explores codebase for patterns
-- Creates tasks with dependencies
-- Saves plan to `.ai-factory/PLAN.md` (or branch-named file)
-- For 5+ tasks, includes commit checkpoints
 
 ### `/ai-factory-improve [prompt]`
 Refine an existing plan with a second iteration:
@@ -62,13 +55,13 @@ Refine an existing plan with a second iteration:
 /ai-factory-improve                                    # Auto-review: find gaps, missing tasks, wrong deps
 /ai-factory-improve добавь валидацию и обработку ошибок # Improve based on specific feedback
 ```
-- Finds the active plan (`.ai-factory/PLAN.md` or branch-based `features/<branch>.md`)
-- Performs deeper codebase analysis than the initial `/ai-factory-task` planning
+- Finds the active plan (`.ai-factory/PLAN.md` or branch-based `changes/<branch>.md`)
+- Performs deeper codebase analysis than the initial `/ai-factory-plan` planning
 - Finds missing tasks (migrations, configs, middleware)
 - Fixes task dependencies and descriptions
 - Removes redundant tasks
 - Shows improvement report and asks for approval before applying
-- If no plan found — suggests running `/ai-factory-task` or `/ai-factory-feature` first
+- If no plan found — suggests running `/ai-factory-plan` first
 
 ### `/ai-factory-implement`
 Executes the plan:
@@ -186,7 +179,7 @@ Generates and maintains project documentation:
 
 **Scattered .md cleanup** — finds loose markdown files in your project root (CONTRIBUTING.md, ARCHITECTURE.md, SETUP.md, DEPLOYMENT.md, etc.) and proposes consolidating them into a structured `docs/` directory. No more documentation scattered across 10 root-level files.
 
-**Stays in sync with your code** — when `/ai-factory-feature` asks "Update documentation?" and you say yes, the plan gets `Docs: yes`. After `/ai-factory-implement` finishes all tasks, it automatically runs `/ai-factory-docs` to update documentation. Your docs grow with your codebase, not after the fact.
+**Stays in sync with your code** — when `/ai-factory-plan full` asks "Update documentation?" and you say yes, the plan gets `Docs: yes`. After `/ai-factory-implement` finishes all tasks, it automatically runs `/ai-factory-docs` to update documentation. Your docs grow with your codebase, not after the fact.
 
 **Documentation website** — `--web` flag generates a complete static HTML site in `docs-html/` with navigation bar, dark mode support, and clean typography. Ready to host on GitHub Pages or any static hosting.
 

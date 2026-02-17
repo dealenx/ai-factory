@@ -9,7 +9,7 @@
   "version": "1.0.0",
   "agent": "claude",
   "skillsDir": ".claude/skills",
-  "installedSkills": ["ai-factory", "feature", "task", "improve", "implement", "commit", "build-automation"],
+  "installedSkills": ["ai-factory", "ai-factory-plan", "ai-factory-improve", "ai-factory-implement", "ai-factory-commit", "ai-factory-build-automation"],
   "mcp": {
     "github": true,
     "postgres": false,
@@ -41,25 +41,24 @@ your-project/
 ├── .claude/                   # Agent config dir (varies: .cursor/, .codex/, .ai/, etc.)
 │   ├── skills/
 │   │   ├── ai-factory/
-│   │   ├── feature/
-│   │   ├── task/
-│   │   ├── improve/
-│   │   ├── implement/
-│   │   ├── commit/
-│   │   ├── dockerize/
-│   │   ├── build-automation/
-│   │   ├── verify/
-│   │   ├── docs/
-│   │   ├── review/
-│   │   └── skill-generator/
+│   │   ├── ai-factory-plan/
+│   │   ├── ai-factory-improve/
+│   │   ├── ai-factory-implement/
+│   │   ├── ai-factory-commit/
+│   │   ├── ai-factory-dockerize/
+│   │   ├── ai-factory-build-automation/
+│   │   ├── ai-factory-verify/
+│   │   ├── ai-factory-docs/
+│   │   ├── ai-factory-review/
+│   │   └── ai-factory-skill-generator/
 │   └── settings.local.json    # MCP config (Claude/Cursor, gitignored)
 ├── .ai-factory/               # AI Factory working directory
 │   ├── DESCRIPTION.md         # Project specification
 │   ├── ARCHITECTURE.md        # Architecture decisions and guidelines
-│   ├── PLAN.md                # Current plan (from /ai-factory-task)
+│   ├── PLAN.md                # Current plan (from /ai-factory-plan fast)
 │   ├── SECURITY.md            # Ignored security items (from /security-checklist ignore)
-│   ├── features/              # Feature plans (from /ai-factory-feature)
-│   │   └── feature-*.md
+│   ├── changes/               # Plans from /ai-factory-plan full
+│   │   └── <branch-name>.md
 │   ├── patches/               # Self-improvement patches (from /ai-factory-fix)
 │   │   └── 2026-02-07-14.30.md
 │   └── evolutions/            # Evolution logs (from /ai-factory-evolve)

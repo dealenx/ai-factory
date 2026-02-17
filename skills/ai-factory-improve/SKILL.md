@@ -1,6 +1,6 @@
 ---
 name: ai-factory-improve
-description: Refine and enhance an existing implementation plan with a second iteration. Re-analyzes the codebase, checks for gaps, missing tasks, wrong dependencies, and improves the plan quality. Use after /ai-factory-task or /ai-factory-feature to polish the plan before implementation.
+description: Refine and enhance an existing implementation plan with a second iteration. Re-analyzes the codebase, checks for gaps, missing tasks, wrong dependencies, and improves the plan quality. Use after /ai-factory-plan to polish the plan before implementation.
 argument-hint: "[improvement prompt or empty for auto-review]"
 allowed-tools: Read Write Edit Glob Grep Bash(git *) TaskCreate TaskUpdate TaskList TaskGet AskUserQuestion Questions
 disable-model-invocation: false
@@ -27,12 +27,12 @@ enhanced plan with better tasks, correct dependencies, more detail
 **Locate the active plan file using this priority:**
 
 ```
-1. .ai-factory/PLAN.md exists? → Use it (from direct /ai-factory-task)
+1. .ai-factory/PLAN.md exists? → Use it (from /ai-factory-plan fast)
 2. No .ai-factory/PLAN.md → Check current git branch:
    git branch --show-current
    → Convert branch name to filename: replace "/" with "-", add ".md"
-   → Look for .ai-factory/features/<branch-name>.md
-   Example: feature/user-auth → .ai-factory/features/feature-user-auth.md
+   → Look for .ai-factory/changes/<branch-name>.md
+   Example: feature/user-auth → .ai-factory/changes/feature-user-auth.md
 ```
 
 **If NO plan file found at either location:**
@@ -41,8 +41,8 @@ enhanced plan with better tasks, correct dependencies, more detail
 No active plan found.
 
 To create a plan first, use:
-- /ai-factory-feature <description>  — for a new feature (creates branch + plan)
-- /ai-factory-task <description>     — for a quick task plan
+- /ai-factory-plan full <description>  — for a new feature (creates branch + plan)
+- /ai-factory-plan fast <description>  — for a quick task plan
 ```
 
 → **STOP here.** Do not proceed without a plan file.
@@ -89,7 +89,7 @@ Understand what's already been created, what's in progress, what's completed.
 
 ### Step 2: Deep Codebase Analysis
 
-Now do a **deeper** codebase exploration than what `/ai-factory-task` did initially:
+Now do a **deeper** codebase exploration than what `/ai-factory-plan` did initially:
 
 **2.1: Trace through existing code paths**
 
@@ -317,7 +317,7 @@ Options:
 ```
 User: /ai-factory-improve
 
-→ Found plan: .ai-factory/features/feature-user-auth.md
+→ Found plan: .ai-factory/changes/feature-user-auth.md
 → 6 tasks in plan
 → Deep codebase analysis...
 → Found: project uses middleware pattern for auth, plan misses middleware task
@@ -362,8 +362,8 @@ User: /ai-factory-improve
 → No plan file found
 
 "No active plan found. Create one first:
-- /ai-factory-feature <description>
-- /ai-factory-task <description>"
+- /ai-factory-plan full <description>
+- /ai-factory-plan fast <description>"
 ```
 
 ### Example 4: Plan already looks good
@@ -371,7 +371,7 @@ User: /ai-factory-improve
 ```
 User: /ai-factory-improve
 
-→ Found plan: .ai-factory/features/feature-product-search.md
+→ Found plan: .ai-factory/changes/feature-product-search.md
 → 5 tasks in plan
 → Deep analysis... all tasks well-defined, dependencies correct
 → No significant improvements found

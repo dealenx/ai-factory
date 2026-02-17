@@ -6,8 +6,8 @@ AI Factory uses markdown files to track implementation plans:
 
 | Source | Plan File | After Completion |
 |--------|-----------|------------------|
-| `/ai-factory-task` (direct) | `.ai-factory/PLAN.md` | Offer to delete |
-| `/ai-factory-feature` | `.ai-factory/features/<branch-name>.md` | Keep (user decides) |
+| `/ai-factory-plan fast` | `.ai-factory/PLAN.md` | Offer to delete |
+| `/ai-factory-plan full` | `.ai-factory/changes/<branch-name>.md` | Keep (user decides) |
 
 **Example plan file:**
 

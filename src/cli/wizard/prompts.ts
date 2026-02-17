@@ -17,17 +17,6 @@ export async function runWizard(projectDir: string): Promise<WizardAnswers> {
   const detectedStack = await detectStack(projectDir);
   const availableSkills = await getAvailableSkills();
 
-  // Base skills that are always recommended
-  const baseSkills = [
-    'ai-factory',
-    'skill-generator',
-    'feature',
-    'task',
-    'implement',
-    'commit',
-    'review',
-  ];
-
   if (detectedStack) {
     console.log(`\n📦 Detected: ${detectedStack.name}`);
     if (detectedStack.frameworks.length > 0) {

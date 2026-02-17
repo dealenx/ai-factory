@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import fs from 'fs-extra';
 import path from 'path';
 import { loadConfig, saveConfig, getCurrentVersion } from '../../core/config.js';
 import { installSkills, getAvailableSkills } from '../../core/installer.js';
@@ -85,6 +86,35 @@ export async function upgradeCommand(): Promise<void> {
     console.log(chalk.dim('  No old-format skills found.\n'));
   } else {
     console.log(chalk.dim(`\n  Removed ${removedCount} old-format skill(s).\n`));
+  }
+
+  // Step 1.5: Rename .ai-factory/features/ → .ai-factory/changes/
+  const featuresDir = path.join(projectDir, '.ai-factory', 'features');
+  const changesDir = path.join(projectDir, '.ai-factory', 'changes');
+
+  if (await fileExists(featuresDir) && !(await fileExists(changesDir))) {
+    await fs.move(featuresDir, changesDir);
+    console.log(chalk.green('✓ Renamed .ai-factory/features/ → .ai-factory/changes/\n'));
+  }
+
+  // Step 1.6: Remove old ai-factory-task and ai-factory-feature skills
+  for (const oldSkill of ['ai-factory-task', 'ai-factory-feature']) {
+    const oldDir = path.join(skillsDir, oldSkill);
+    if (await fileExists(oldDir)) {
+      await removeDirectory(oldDir);
+      console.log(chalk.yellow(`  Removed skill: ${oldSkill}/`));
+      removedCount++;
+    }
+
+    // Antigravity: remove flat workflow files
+    if (isAntigravity) {
+      const flatFile = path.join(projectDir, agentConfig.configDir, 'workflows', `${oldSkill}.md`);
+      if (await fileExists(flatFile)) {
+        await removeFile(flatFile);
+        console.log(chalk.yellow(`  Removed workflow: ${oldSkill}.md`));
+        removedCount++;
+      }
+    }
   }
 
   // Step 2: Install new-format skills

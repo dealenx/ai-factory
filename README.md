@@ -83,7 +83,7 @@ This removes old bare-named skills (`commit`, `feature`, etc.) and installs new 
 
 ```bash
 # Plan a feature — creates branch, analyzes codebase, builds step-by-step plan
-/ai-factory-feature Add user authentication with OAuth
+/ai-factory-plan Add user authentication with OAuth
 
 # Optionally refine the plan with deeper analysis
 /ai-factory-improve

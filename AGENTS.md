@@ -33,16 +33,15 @@ ai-factory/
 │   ├── ai-factory-dockerize/          # Docker/compose generator
 │   ├── ai-factory-docs/               # Documentation generation & maintenance
 │   ├── ai-factory-evolve/             # Self-improve skills based on context
-│   ├── ai-factory-feature/            # Start feature (branch + plan)
 │   ├── ai-factory-fix/                # Quick bug fixes (no plans)
 │   ├── ai-factory-implement/          # Execute plan tasks
 │   ├── ai-factory-improve/            # Plan refinement (second iteration)
+│   ├── ai-factory-plan/               # Plan implementation (fast/full modes)
 │   ├── ai-factory-review/             # Code review
 │   ├── ai-factory-roadmap/            # Strategic project roadmap
 │   ├── ai-factory-rules/              # Project rules and conventions
 │   ├── ai-factory-security-checklist/ # Security audit
 │   ├── ai-factory-skill-generator/    # Generate new skills
-│   ├── ai-factory-task/               # Create implementation plan
 │   ├── ai-factory-verify/             # Verify implementation against plan
 │   └── _templates/                    # Stack-specific templates
 ├── scripts/                # test-skills.sh
@@ -62,14 +61,13 @@ ai-factory/
 All AI Factory files in user projects go to `.ai-factory/`:
 - `.ai-factory/DESCRIPTION.md` — project specification
 - `.ai-factory/ARCHITECTURE.md` — architecture decisions and guidelines
-- `.ai-factory/PLAN.md` — task plan (from /ai-factory-task)
-- `.ai-factory/features/feature-*.md` — feature plans (from /ai-factory-feature)
+- `.ai-factory/PLAN.md` — task plan (from /ai-factory-plan fast)
+- `.ai-factory/changes/<branch>.md` — plans (from /ai-factory-plan full)
 
 ### Skill Naming (v2)
 All skills use `ai-factory-` prefix (v1 used bare names like `commit`, `feature`):
 - `/ai-factory` — main setup
-- `/ai-factory-feature`
-- `/ai-factory-task`
+- `/ai-factory-plan`
 - `/ai-factory-implement`
 - `/ai-factory-roadmap`
 - `/ai-factory-rules`
@@ -110,25 +108,17 @@ Subsequent → review progress, add/reprioritize/mark milestones done
     ↓
 ROADMAP.md = strategic checklist of high-level goals
 
-/ai-factory-feature <description>
+/ai-factory-plan [fast|full] <description>
     ↓
 Reads .ai-factory/DESCRIPTION.md + ARCHITECTURE.md for context
     ↓
-Creates git branch (feature/xxx)
-    ↓
-Asks: tests? logging level?
-    ↓
-Calls /ai-factory-task → creates .ai-factory/features/feature-xxx.md
-
-/ai-factory-task <description>
-    ↓
-Reads .ai-factory/DESCRIPTION.md + ARCHITECTURE.md for context
+fast → no branch, saves to .ai-factory/PLAN.md
+full → creates git branch, asks: tests? logging? docs?
+       saves to .ai-factory/changes/<branch>.md
     ↓
 Explores codebase
     ↓
 Creates tasks with TaskCreate
-    ↓
-Saves plan to .ai-factory/PLAN.md (direct) or .ai-factory/features/feature-xxx.md (from feature)
     ↓
 For 5+ tasks: includes commit checkpoints
 
@@ -184,7 +174,7 @@ Saves evolution log to .ai-factory/evolutions/
 disable-model-invocation: true  # User must invoke explicitly
 allowed-tools: Bash(git *) Write Edit
 ```
-Used by: feature, task, implement, commit, deploy
+Used by: plan, implement, commit, deploy
 
 ### Reference skills (model + user)
 ```yaml
@@ -267,7 +257,7 @@ docs/
 2. **Details go to `docs/`.** Each file is self-contained — one topic, one page. A user should be able to read a single doc file and get the full picture on that topic.
 3. **No duplication.** If information lives in `docs/`, README links to it — does not repeat it. The only exception: installation command appears in both README and `docs/getting-started.md` (users expect it in README).
 4. **Navigation.** Every docs/ file starts with `[← Back to README](../README.md)` and ends with a "See Also" section linking to 2-3 related pages. `getting-started.md` has "Next Steps" instead.
-5. **Workflow skills vs utility skills.** `docs/workflow.md` describes the 6 workflow skills (feature, task, improve, implement, fix, evolve) with concise 1-paragraph overviews. `docs/skills.md` has the full reference for ALL skills, split into "Workflow Skills" and "Utility Skills" sections.
+5. **Workflow skills vs utility skills.** `docs/workflow.md` describes the workflow skills (plan, improve, implement, fix, evolve) with concise 1-paragraph overviews. `docs/skills.md` has the full reference for ALL skills, split into "Workflow Skills" and "Utility Skills" sections.
 6. **Cross-links use relative paths.** From README: `docs/workflow.md`. Between docs: `workflow.md` (same directory).
 
 ### When to Update What
@@ -281,7 +271,7 @@ docs/
 | Security scanning changed | `docs/security.md` |
 | Plan file format changed | `docs/plan-files.md` |
 | New CLI command | `docs/getting-started.md` (CLI Commands section) |
-| Documentation conventions changed | `skills/docs/SKILL.md` (principles and templates) |
+| Documentation conventions changed | `skills/ai-factory-docs/SKILL.md` (principles and templates) |
 
 ## Common Changes
 
@@ -359,6 +349,6 @@ After changes, verify:
 - [ ] `ai-factory update` updates existing skills
 - [ ] `ai-factory upgrade` migrates v1 → v2 correctly
 - [ ] `/ai-factory` in Claude Code shows interactive stack selection
-- [ ] `/ai-factory-feature` creates branch + plan file
+- [ ] `/ai-factory-plan` creates branch + plan file
 - [ ] `/ai-factory-implement` finds and executes plan
 - [ ] Skills read `.ai-factory/DESCRIPTION.md`

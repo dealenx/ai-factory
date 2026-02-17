@@ -37,7 +37,7 @@ export class AntigravityTransformer implements AgentTransformer {
 
 ## Skill Usage
 
-- Use \`/ai-factory-feature\` for new features — creates branch, plan, and tasks
+- Use \`/ai-factory-plan\` for new features — creates branch, plan, and tasks
 - Use \`/ai-factory-fix\` for bug fixes — analyzes, fixes, suggests tests
 - Use \`/ai-factory-commit\` for commits — follows conventional commits
 - Use \`/ai-factory-implement\` to execute plans step by step
@@ -58,7 +58,7 @@ AI Factory organizes skills into three categories:
 
 ### Workflows (.agent/workflows/)
 Action-oriented skills that execute specific tasks:
-- \`ai-factory-feature.md\` — Plan and develop new features
+- \`ai-factory-plan.md\` — Plan and develop new features
 - \`ai-factory-fix.md\` — Fix bugs with structured approach
 - \`ai-factory-implement.md\` — Execute plans step by step
 - \`ai-factory-commit.md\` — Create conventional commits

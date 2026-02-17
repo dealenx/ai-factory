@@ -45,9 +45,9 @@ What would you like to do?
 ```
 
 Based on choice:
-- New feature from current → `/ai-factory-feature <description>`
-- Return to main → `git checkout main && git pull` → `/ai-factory-feature <description>`
-- Quick task → `/ai-factory-task <description>`
+- New feature from current → `/ai-factory-plan full <description>`
+- Return to main → `git checkout main && git pull` → `/ai-factory-plan full <description>`
+- Quick task → `/ai-factory-plan fast <description>`
 
 **If plan file exists → continue to Step 0.1**
 
@@ -86,15 +86,15 @@ Based on choice:
 **Check for plan files in this order:**
 
 ```
-1. .ai-factory/PLAN.md exists? → Use it (direct /ai-factory-task call)
+1. .ai-factory/PLAN.md exists? → Use it (from /ai-factory-plan fast)
 2. No .ai-factory/PLAN.md → Check current git branch:
    git branch --show-current
-   → Look for .ai-factory/features/<branch-name>.md (e.g., .ai-factory/features/feature-user-auth.md)
+   → Look for .ai-factory/changes/<branch-name>.md (e.g., .ai-factory/changes/feature-user-auth.md)
 ```
 
 **Priority:**
-1. `.ai-factory/PLAN.md` - always takes priority (from direct `/ai-factory-task`)
-2. Branch-named file - if no .ai-factory/PLAN.md (from `/ai-factory-feature`)
+1. `.ai-factory/PLAN.md` - always takes priority (from `/ai-factory-plan fast`)
+2. Branch-named file - if no .ai-factory/PLAN.md (from `/ai-factory-plan full`)
 
 **Read the plan file** to understand:
 - Context and settings (testing, logging preferences)
@@ -249,7 +249,7 @@ When all tasks are done:
 All 8 tasks completed.
 
 Branch: feature/product-search
-Plan file: .ai-factory/features/feature-product-search.md
+Plan file: .ai-factory/changes/feature-product-search.md
 Files modified:
 - src/services/search.ts (created)
 - src/api/products/search.ts (created)
@@ -297,7 +297,7 @@ If user chooses "Skip to commit" → suggest invoking `/ai-factory-commit`.
 
 **Check if documentation needs updating:**
 
-Read the plan file settings. If documentation preference is set to "yes" (from `/ai-factory-feature` questions), run `/ai-factory-docs` to update documentation.
+Read the plan file settings. If documentation preference is set to "yes" (from `/ai-factory-plan full` questions), run `/ai-factory-docs` to update documentation.
 
 If documentation preference is "no" or not set — skip this step silently.
 
@@ -309,14 +309,14 @@ If documentation preference is "yes":
 
 **Handle plan file after completion:**
 
-- **If `.ai-factory/PLAN.md`** (direct /ai-factory-task, not from /ai-factory-feature):
+- **If `.ai-factory/PLAN.md`** (from `/ai-factory-plan fast`):
   ```
   Would you like to delete .ai-factory/PLAN.md? (It's no longer needed)
   - [ ] Yes, delete it
   - [ ] No, keep it
   ```
 
-- **If branch-named file** (e.g., `.ai-factory/features/feature-user-auth.md`):
+- **If branch-named file** (e.g., `.ai-factory/changes/feature-user-auth.md`):
   - Keep it - documents what was done
   - User can delete before merging if desired
 
@@ -394,7 +394,7 @@ If user chooses **"No, I'll handle it manually"**, show a reminder:
 To merge and clean up later:
   cd <main-repo-path>
   git merge <branch>
-  /ai-factory-feature --cleanup <branch>
+  /ai-factory-plan --cleanup <branch>
 ```
 
 **IMPORTANT: NO summary reports, NO analysis documents, NO wrap-up tasks.**

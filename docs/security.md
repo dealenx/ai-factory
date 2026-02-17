@@ -72,14 +72,14 @@ A skill with **any CRITICAL threat is never installed**. No exceptions, no overr
 
 ```bash
 # Scan a skill directory (use your agent's skills path)
-python3 .claude/skills/skill-generator/scripts/security-scan.py ./my-downloaded-skill/
+python3 .claude/skills/ai-factory-skill-generator/scripts/security-scan.py ./my-downloaded-skill/
 
 # Scan a single SKILL.md file
-python3 .claude/skills/skill-generator/scripts/security-scan.py ./my-skill/SKILL.md
+python3 .claude/skills/ai-factory-skill-generator/scripts/security-scan.py ./my-skill/SKILL.md
 
 # For other agents, adjust the path accordingly:
-# python3 .codex/skills/skill-generator/scripts/security-scan.py ./my-skill/
-# python3 .agents/skills/skill-generator/scripts/security-scan.py ./my-skill/
+# python3 .codex/skills/ai-factory-skill-generator/scripts/security-scan.py ./my-skill/
+# python3 .agents/skills/ai-factory-skill-generator/scripts/security-scan.py ./my-skill/
 ```
 
 ## See Also

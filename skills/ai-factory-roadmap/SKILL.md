@@ -93,7 +93,7 @@ Create `.ai-factory/ROADMAP.md` with this format:
 ```
 
 **Rules for milestones:**
-- Each milestone is a **high-level goal**, not a granular task (that's `/ai-factory-task`)
+- Each milestone is a **high-level goal**, not a granular task (that's `/ai-factory-plan`)
 - 5-15 milestones is the sweet spot — fewer means too vague, more means too granular
 - Order by logical sequence (dependencies first)
 - Mark already-completed milestones as `[x]` and add them to the Completed table
@@ -186,8 +186,8 @@ Completed: X/N
 Next up: **Milestone Name**
 
 To start working on the next milestone:
-/ai-factory-feature <milestone description>  → creates branch + plan
-/ai-factory-implement                        → executes the plan
+/ai-factory-plan <milestone description>  → creates branch + plan
+/ai-factory-implement                     → executes the plan
 ```
 
 ---
@@ -270,4 +270,4 @@ Next up: **Milestone Name**
 2. **ROADMAP.md is the source of truth** — always read before modifying
 3. **Never remove milestones silently** — always confirm with user before removing
 4. **Completed table tracks history** — every checked milestone gets a date entry
-5. **NO implementation** — this skill only plans, use `/ai-factory-feature` to start a feature and `/ai-factory-implement` to execute
+5. **NO implementation** — this skill only plans, use `/ai-factory-plan` to start a feature and `/ai-factory-implement` to execute

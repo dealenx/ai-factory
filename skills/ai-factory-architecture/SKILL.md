@@ -162,7 +162,7 @@ Key rules:
 - [rule 2]
 - [rule 3]
 
-All workflow skills (/ai-factory-task, /ai-factory-feature, /ai-factory-implement) will now follow these architecture guidelines.
+All workflow skills (/ai-factory-plan, /ai-factory-implement) will now follow these architecture guidelines.
 ```
 
 ---

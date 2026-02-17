@@ -54,11 +54,11 @@ Continuing from Task #4: Implement JWT generation
 
 ```
 Session 1:
-  /ai-factory-feature Add user authentication
+  /ai-factory-plan full Add user authentication
   → Creates branch: feature/user-authentication
   → Asks about tests (No), logging (Verbose)
-  → /ai-factory-task creates 6 tasks
-  → Saves plan to: .ai-factory/features/feature-user-authentication.md
+  → Creates 6 tasks
+  → Saves plan to: .ai-factory/changes/feature-user-authentication.md
   → /ai-factory-implement starts
   → Completes tasks #1, #2, #3
   → User ends session
@@ -66,7 +66,7 @@ Session 1:
 Session 2:
   /ai-factory-implement
   → Detects branch: feature/user-authentication
-  → Reads plan: .ai-factory/features/feature-user-authentication.md
+  → Reads plan: .ai-factory/changes/feature-user-authentication.md
   → Loads state: 3/6 complete
   → Continues from task #4
   → Completes tasks #4, #5, #6

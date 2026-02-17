@@ -31,7 +31,7 @@ Same logic as `/ai-factory-implement`:
 1. .ai-factory/PLAN.md exists? → Use it
 2. No PLAN.md → Check current git branch:
    git branch --show-current
-   → Look for .ai-factory/features/<branch-name>.md
+   → Look for .ai-factory/changes/<branch-name>.md
 ```
 
 If no plan file found:

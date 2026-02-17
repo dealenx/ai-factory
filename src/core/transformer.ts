@@ -19,11 +19,10 @@ export const WORKFLOW_SKILLS = new Set([
   'ai-factory',
   'ai-factory-commit',
   'ai-factory-deploy',
-  'ai-factory-feature',
   'ai-factory-fix',
   'ai-factory-implement',
   'ai-factory-improve',
-  'ai-factory-task',
+  'ai-factory-plan',
   'ai-factory-verify',
 ]);
 

@@ -57,22 +57,23 @@ The repeatable development loop. Each skill feeds into the next, sharing context
 │                       DEVELOPMENT WORKFLOW                               │
 └─────────────────────────────────────────────────────────────────────────┘
 
-               ┌──────────────────┐            ┌─────────────────┐  ┌──────────────┐
-               │                  │            │                 │  │              │
-               │ /ai-factory-task │            │ /ai-factory-    │  │ /ai-factory- │
-               │                  │            │    feature      │  │    fix       │
-               │  Small tasks     │            │                 │  │              │
-               │  No git branch   │            │ Full features   │  │ Bug fixes    │
-               │  Quick work      │            │ Git branch      │  │ Optional plan│
-               │                  │            │ Full plan       │  │ With logging │
-               └────────┬─────────┘            └────────┬────────┘  └───────┬──────┘
-                        │                               │                   │
-                        │                               │                   ▼
-                        │                               │          ┌──────────────────┐
-                        │                               │          │ .ai-factory/     │
-                        │                               │          │   patches/       │
-                        │                               │          │ Self-improvement │
-                        └───────────────┬───────────────┘          └────────┬─────────┘
+               ┌──────────────────────────┐                         ┌──────────────┐
+               │                          │                         │              │
+               │    /ai-factory-plan      │                         │ /ai-factory- │
+               │                          │                         │    fix       │
+               │  fast → no branch,       │                         │              │
+               │         PLAN.md          │                         │ Bug fixes    │
+               │  full → git branch,      │                         │ Optional plan│
+               │         changes/<br>.md  │                         │ With logging │
+               │                          │                         │              │
+               └────────────┬─────────────┘                         └───────┬──────┘
+                            │                                               │
+                            │                                               ▼
+                            │                                      ┌──────────────────┐
+                            │                                      │ .ai-factory/     │
+                            │                                      │   patches/       │
+                            │                                      │ Self-improvement │
+                            └───────────────┬──────────────────────└────────┬─────────┘
                                         │                                   │
                                         ▼                                   │
                              ┌─────────────────────┐                        │
@@ -141,9 +142,9 @@ The repeatable development loop. Each skill feeds into the next, sharing context
 | Command | Use Case | Creates Branch? | Creates Plan? |
 |---------|----------|-----------------|---------------|
 | `/ai-factory-roadmap` | Strategic planning, milestones, long-term vision | No | `.ai-factory/ROADMAP.md` |
-| `/ai-factory-task` | Small tasks, quick fixes, experiments | No | `.ai-factory/PLAN.md` |
-| `/ai-factory-feature` | Full features, stories, epics | Yes | `.ai-factory/features/<branch>.md` |
-| `/ai-factory-feature --parallel` | Concurrent features via worktrees | Yes + worktree | User runs `/ai-factory-task` in worktree |
+| `/ai-factory-plan fast` | Small tasks, quick fixes, experiments | No | `.ai-factory/PLAN.md` |
+| `/ai-factory-plan full` | Full features, stories, epics | Yes | `.ai-factory/changes/<branch>.md` |
+| `/ai-factory-plan full --parallel` | Concurrent features via worktrees | Yes + worktree | Autonomous end-to-end |
 | `/ai-factory-improve` | Refine plan before implementation | No | No (improves existing) |
 | `/ai-factory-fix` | Bug fixes, errors, hotfixes | No | Optional (`.ai-factory/FIX_PLAN.md`) |
 | `/ai-factory-verify` | Post-implementation quality check | No | No (reads existing) |
@@ -162,21 +163,16 @@ These skills form the development pipeline. Each one feeds into the next.
 
 High-level project planning. Creates `.ai-factory/ROADMAP.md` — a strategic checklist of major milestones (not granular tasks). Use `check` to automatically scan the codebase and mark milestones that appear done. `/ai-factory-implement` also checks the roadmap after completing all tasks.
 
-### `/ai-factory-feature <description>` — start a feature
+### `/ai-factory-plan [fast|full] <description>` — plan the work
 
 ```
-/ai-factory-feature Add user authentication with OAuth
+/ai-factory-plan Add user authentication with OAuth       # Asks which mode
+/ai-factory-plan fast Add product search API              # Quick plan, no branch
+/ai-factory-plan full Add user authentication with OAuth  # Git branch + full plan
+/ai-factory-plan full --parallel Add Stripe checkout      # Parallel worktree
 ```
 
-Creates a git branch, asks about testing/logging/docs preferences, builds a plan file, and invokes `/ai-factory-task` to break it into steps. For parallel work on multiple features, use `--parallel` to create isolated worktrees.
-
-### `/ai-factory-task <description>` — plan the work
-
-```
-/ai-factory-task Add product search API
-```
-
-Analyzes requirements, explores your codebase for patterns, creates tasks with dependencies, and saves the plan to `.ai-factory/PLAN.md`. For 5+ tasks, includes commit checkpoints.
+Two modes — **fast** (no branch, saves to `.ai-factory/PLAN.md`) and **full** (creates git branch, asks about testing/logging/docs, saves to `.ai-factory/changes/<branch>.md`). Analyzes requirements, explores codebase for patterns, creates tasks with dependencies. For 5+ tasks, includes commit checkpoints. For parallel work on multiple features, use `full --parallel` to create isolated worktrees.
 
 ### `/ai-factory-improve [prompt]` — refine the plan
 
@@ -234,7 +230,7 @@ Reads all accumulated patches, analyzes project patterns, and proposes targeted 
 
 ---
 
-For full details on all skills including utility commands (`/ai-factory-docs`, `/ai-factory-dockerize`, `/ai-factory-build-automation`, `/ai-factory-ci`, `/ai-factory-commit`, `/ai-factory-verify`, `/ai-factory-skill-generator`, `/ai-factory-security-checklist`), see [Core Skills](skills.md).
+For full details on all skills including utility commands (`/ai-factory-docs`, `/ai-factory-dockerize`, `/ai-factory-build-automation`, `/ai-factory-ci`, `/ai-factory-commit`, `/ai-factory-skill-generator`, `/ai-factory-security-checklist`), see [Core Skills](skills.md).
 
 ## Why Spec-Driven?
 
