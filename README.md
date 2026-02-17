@@ -34,7 +34,7 @@ npm install -g ai-factory
 
 ### Using mise
 ```bash
-mise use -g fnox
+mise use -g npm:ai-factory
 ```
 
 ## Quick Start
