@@ -50,7 +50,7 @@ Run once per project. Sets up context files that all workflow skills depend on.
 
 The repeatable development loop. Each skill feeds into the next, sharing context through plan files and patches.
 
-![workflow](https://github.com/lee-to/ai-factory/raw/main/art/workflow.png)
+![workflow](https://github.com/lee-to/ai-factory/raw/2.x/art/workflow.png)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
