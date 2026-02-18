@@ -73,26 +73,7 @@ Options:
 2. Fast — quick plan, no branch, saves to PLAN.md
 ```
 
-**Examples:**
-```
-/aif-plan fast Add product search API
-→ mode=fast, description="Add product search API"
-
-/aif-plan full Add user authentication with OAuth
-→ mode=full, description="Add user authentication with OAuth"
-
-/aif-plan full --parallel Add Stripe checkout
-→ mode=full, parallel=true, description="Add Stripe checkout"
-
-/aif-plan --list
-→ show worktrees, STOP
-
-/aif-plan --cleanup feature/user-auth
-→ remove worktree, STOP
-
-/aif-plan Add user authentication
-→ ask mode interactively, description="Add user authentication"
-```
+For concrete parsing examples and expected behavior per command shape, read `references/EXAMPLES.md` (Argument Parsing).
 
 ---
 
@@ -345,39 +326,14 @@ Use `TaskUpdate` to set `blockedBy` relationships:
 mkdir -p .ai-factory/plans  # only when saving to branch-named plan files
 ```
 
-**Plan file format:**
+**Plan file must include:**
+- Title with feature name
+- Branch and creation date
+- `Settings` section (Testing, Logging, Docs)
+- `Tasks` section grouped by phases
+- `Commit Plan` section when there are 5+ tasks
 
-```markdown
-# Implementation Plan: [Feature Name]
-
-Branch: [current branch or "none"]
-Created: [date]
-
-## Settings
-- Testing: yes/no
-- Logging: verbose/standard/minimal
-- Docs: yes/no
-
-## Commit Plan
-<!-- For plans with 5+ tasks, define commit checkpoints -->
-- **Commit 1** (after tasks 1-3): "feat: add base models and types"
-- **Commit 2** (after tasks 4-6): "feat: implement core service logic"
-
-## Tasks
-
-### Phase 1: Setup
-- [ ] Task 1: [description]
-- [ ] Task 2: [description]
-
-### Phase 2: Core Implementation
-- [ ] Task 3: [description] (depends on 1, 2)
-- [ ] Task 4: [description]
-<!-- Commit checkpoint: tasks 1-4 -->
-
-### Phase 3: Integration
-- [ ] Task 5: [description] (depends on 3, 4)
-<!-- Commit checkpoint: tasks 5+ -->
-```
+Use the canonical template in `references/TASK-FORMAT.md` (Plan File Template).
 
 **Commit Plan Rules:**
 - **5+ tasks** → add commit checkpoints every 3-5 tasks
@@ -486,45 +442,19 @@ If the worktree path doesn't exist, check `git worktree list` and suggest the co
 
 ---
 
-## Task Creation Format
+## Task Description Requirements
 
-```
-TaskCreate:
-  subject: "Implement user login endpoint"
-  description: |
-    Create POST /api/auth/login endpoint that:
-    - Accepts email and password
-    - Validates credentials against database
-    - Returns JWT token on success
-    - Returns 401 on invalid credentials
+Every `TaskCreate` item MUST include:
+- Clear deliverable and expected behavior
+- File paths to change/create
+- Logging requirements (what to log, where, and levels)
+- Dependency notes when applicable
 
-    LOGGING REQUIREMENTS:
-    - Log function entry with request context
-    - Log validation result (pass/fail with reasons)
-    - Log external service calls and responses
-    - Log any errors with full context
-    - Use format: [ServiceName.method] message {data}
-    - Use log levels (DEBUG/INFO/WARN/ERROR)
+**Never create tasks without logging instructions.**
 
-    Files: src/api/auth/login.ts, src/services/auth.ts
-  activeForm: "Implementing login endpoint"
-```
-
-## CRITICAL: Logging in Task Descriptions
-
-**Every task description MUST include logging requirements.** AI-generated code often has subtle bugs — verbose logging is essential for debugging.
-
-When writing task descriptions, include:
-- What to log (inputs, outputs, state changes, errors)
-- Log format recommendations (structured JSON when possible)
-- Key checkpoints where logs are critical
-
-Task descriptions should specify that logs must be:
-- **Level-based** — DEBUG for verbose, INFO for important events, ERROR for failures
-- **Environment-controlled** — LOG_LEVEL or DEBUG env variable
-- **Production-safe** — can be reduced without code changes
-
-**DO NOT create tasks without logging instructions — this leads to hard-to-debug implementations.**
+Use canonical examples in `references/TASK-FORMAT.md`:
+- TaskCreate Example
+- Logging Requirements Checklist
 
 ## Important Rules
 
@@ -539,77 +469,12 @@ Task descriptions should specify that logs must be:
 
 ## Plan File Handling
 
-**`.ai-factory/PLAN.md`** (fast mode):
-- Temporary plan for quick tasks
-- After completion, `/aif-implement` will ask to delete it
-- Not tied to any branch
+**Fast mode (`.ai-factory/PLAN.md`)**
+- Temporary plan for quick work
+- `/aif-implement` may offer deletion after completion
 
-**Branch-named file** (full mode, e.g., `.ai-factory/plans/feature-user-auth.md`):
-- Permanent documentation of feature work
-- `/aif-implement` will NOT suggest deletion
-- User decides whether to keep or delete before merge
+**Full mode (`.ai-factory/plans/<branch>.md`)**
+- Branch-scoped, long-lived plan for feature delivery
+- Used to resume work from current branch context
 
-The plan file allows resuming work based on current git branch:
-```bash
-git branch --show-current  # -> feature/user-authentication
-# -> Look for .ai-factory/plans/feature-user-authentication.md
-```
-
-## Examples
-
-### Example 1: Fast Mode
-
-```
-/aif-plan fast Add product search API
-
--> mode=fast
--> Asks about tests (No)
--> Explores codebase
--> Creates 4 tasks
--> Saves plan to .ai-factory/PLAN.md
--> STOP
-```
-
-### Example 2: Full Mode (normal)
-
-```
-/aif-plan full Add user authentication with OAuth
-
--> mode=full
--> Quick reconnaissance
--> Branch: feature/user-authentication
--> Asks about tests (Yes), logging (Verbose), docs (Yes)
--> Creates branch
--> Explores codebase deeply
--> Creates 8 tasks with commit checkpoints
--> Saves plan to .ai-factory/plans/feature-user-authentication.md
--> STOP — user runs /aif-implement when ready
-```
-
-### Example 3: Full Mode (parallel)
-
-```
-/aif-plan full --parallel Add Stripe checkout
-
--> mode=full, parallel=true
--> Quick reconnaissance
--> Branch: feature/stripe-checkout
--> Asks about tests (No), logging (Verbose), docs (No)
--> Creates worktree ../my-project-feature-stripe-checkout
--> Copies context files, cd into worktree
--> Explores codebase deeply
--> Creates 6 tasks
--> Saves plan to .ai-factory/plans/feature-stripe-checkout.md
--> Auto-invokes /aif-implement (parallel = autonomous)
-```
-
-### Example 4: Interactive Mode Selection
-
-```
-/aif-plan Add user authentication
-
--> No mode keyword found
--> Asks: Full (Recommended) or Fast?
--> User picks Full
--> Continues as full mode flow
-```
+For concrete end-to-end flows (fast/full/full+parallel/interactive), read `references/EXAMPLES.md` (Flow Scenarios).

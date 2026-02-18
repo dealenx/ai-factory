@@ -3,7 +3,7 @@ name: aif-architecture
 description: Generate architecture guidelines for the project. Analyzes tech stack from DESCRIPTION.md, recommends an architecture pattern, and creates .ai-factory/ARCHITECTURE.md. Use when setting up project architecture, asking "which architecture", or after /aif setup.
 argument-hint: "[clean|ddd|microservices|monolith|layers]"
 allowed-tools: Read Write Glob Grep Bash(mkdir *) AskUserQuestion Questions
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Architecture - Generate Architecture Guidelines
