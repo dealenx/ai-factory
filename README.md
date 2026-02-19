@@ -1,3 +1,15 @@
+<p align="center">
+  <a href="https://www.npmjs.com/package/ai-factory">
+    <img src="https://img.shields.io/npm/v/ai-factory?label=version" alt="Version" />
+  </a>
+  <a href="https://aif.cutcode.dev/">
+    <img src="https://img.shields.io/badge/official%20site-aif.cutcode.dev-0ea5e9" alt="Official Site" />
+  </a>
+  <a href="https://github.com/lee-to/ai-factory/actions/workflows/ci.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/lee-to/ai-factory/ci.yml?branch=2.x&label=tests" alt="Tests" />
+  </a>
+</p>
+
 ![logo](https://github.com/lee-to/ai-factory/raw/2.x/art/promo.png)
 
 # AI Factory
@@ -140,6 +152,7 @@ AI Factory can generate and maintain your project docs with a single command:
 
 ## Links
 
+- [Official Website](https://aif.cutcode.dev) - AI Factory website
 - [skills.sh](https://skills.sh) - Skill marketplace
 - [Agent Skills Spec](https://agentskills.io) - Skill specification
 - [Claude Code](https://claude.ai/code) - Anthropic's AI coding agent
