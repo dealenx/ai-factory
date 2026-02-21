@@ -1,13 +1,14 @@
 import chalk from 'chalk';
 import path from 'path';
 import { runWizard } from '../wizard/prompts.js';
-import { installSkills } from '../../core/installer.js';
-import { saveConfig, configExists, loadConfig, getCurrentVersion, type AgentInstallation } from '../../core/config.js';
+import { installSkills, installRemoteSkill } from '../../core/installer.js';
+import { saveConfig, configExists, loadConfig, getCurrentVersion, type AgentInstallation, type RemoteSkill } from '../../core/config.js';
 import { configureMcp, getMcpInstructions } from '../../core/mcp.js';
 import { getAgentConfig } from '../../core/agents.js';
 import { getTransformer } from '../../core/transformer.js';
 import { WORKFLOW_SKILLS } from '../../core/transformer.js';
 import { fileExists, removeDirectory, removeFile } from '../../utils/fs.js';
+import { parseRemoteSource, downloadAndExtract, detectSkills, cleanupTemp } from '../../core/remote-skill.js';
 
 async function removeAgentSetup(projectDir: string, agent: AgentInstallation): Promise<void> {
   const agentConfig = getAgentConfig(agent.id);
@@ -108,6 +109,49 @@ export async function initCommand(): Promise<void> {
       });
     }
 
+    // Sync remote skills: install existing remote skills into newly added agents
+    const previousRemoteSkills = collectUniqueRemoteSkills(existingConfig?.agents ?? []);
+    if (previousRemoteSkills.length > 0) {
+      const previousAgentIds = new Set(existingConfig?.agents.map(a => a.id) ?? []);
+      const newAgents = installedAgents.filter(a => !previousAgentIds.has(a.id));
+
+      if (newAgents.length > 0) {
+        console.log(chalk.dim('Syncing remote skills to new agents...\n'));
+
+        for (const rs of previousRemoteSkills) {
+          let repoDir: string | null = null;
+          try {
+            const source = parseRemoteSource(rs.source + (rs.ref && rs.ref !== 'main' ? `#${rs.ref}` : ''));
+            repoDir = await downloadAndExtract(source);
+            const allDetected = await detectSkills(repoDir);
+            const detected = allDetected.find(d => d.name === rs.name || d.relativePath === rs.path);
+
+            if (!detected) {
+              console.log(chalk.yellow(`  ⚠ Remote skill "${rs.name}" not found in repo, skipping`));
+              continue;
+            }
+
+            for (const agent of newAgents) {
+              await installRemoteSkill({
+                skillDir: detected.dirPath,
+                skillName: rs.name,
+                projectDir,
+                agentId: agent.id,
+              });
+              agent.remoteSkills.push({ ...rs });
+              const agentDisplay = getAgentConfig(agent.id).displayName;
+              console.log(chalk.green(`  ✓ [${agentDisplay}] Synced remote skill: ${rs.name}`));
+            }
+          } catch (error) {
+            console.log(chalk.yellow(`  ⚠ Failed to sync "${rs.name}": ${(error as Error).message}`));
+          } finally {
+            if (repoDir) await cleanupTemp(repoDir);
+          }
+        }
+        console.log('');
+      }
+    }
+
     await saveConfig(projectDir, {
       version: getCurrentVersion(),
       agents: installedAgents,
@@ -169,4 +213,19 @@ export async function initCommand(): Promise<void> {
     }
     throw error;
   }
+}
+
+/**
+ * Collect unique remote skills across all agents (deduplicated by name).
+ */
+function collectUniqueRemoteSkills(agents: AgentInstallation[]): RemoteSkill[] {
+  const seen = new Map<string, RemoteSkill>();
+  for (const agent of agents) {
+    for (const rs of agent.remoteSkills) {
+      if (!seen.has(rs.name)) {
+        seen.set(rs.name, rs);
+      }
+    }
+  }
+  return Array.from(seen.values());
 }
