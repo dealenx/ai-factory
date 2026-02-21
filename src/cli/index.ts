@@ -39,7 +39,7 @@ skill
 
 skill
   .command('remove')
-  .argument('<name>', 'Skill name to remove')
+  .argument('[name]', 'Skill name to remove (interactive if omitted)')
   .description('Remove a remote skill')
   .action(skillRemoveCommand);
 

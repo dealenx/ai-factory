@@ -146,7 +146,7 @@ export async function skillAddCommand(source: string): Promise<void> {
 
 // ─── skill remove ────────────────────────────────────────────
 
-export async function skillRemoveCommand(name: string): Promise<void> {
+export async function skillRemoveCommand(name?: string): Promise<void> {
   const projectDir = process.cwd();
 
   console.log(chalk.bold.blue('\n🏭 AI Factory - Remove Remote Skill\n'));
@@ -157,30 +157,71 @@ export async function skillRemoveCommand(name: string): Promise<void> {
     process.exit(1);
   }
 
-  let removedCount = 0;
-
+  // Collect all unique remote skill names across agents
+  const allRemoteNames = new Set<string>();
   for (const agent of config.agents) {
-    const agentConfig = getAgentConfig(agent.id);
-    const idx = agent.remoteSkills.findIndex(r => r.name === name);
-
-    if (idx >= 0) {
-      // Remove skill directory
-      const skillDir = path.join(projectDir, agentConfig.skillsDir, name);
-      await removeDirectory(skillDir);
-
-      agent.remoteSkills.splice(idx, 1);
-      removedCount++;
-      console.log(chalk.green(`  ✓ Removed "${name}" from ${agentConfig.displayName}`));
+    for (const rs of agent.remoteSkills) {
+      allRemoteNames.add(rs.name);
     }
   }
 
-  if (removedCount === 0) {
-    console.log(chalk.yellow(`Remote skill "${name}" not found in any agent configuration.`));
+  if (allRemoteNames.size === 0) {
+    console.log(chalk.yellow('No remote skills installed.'));
     return;
   }
 
+  // Determine which skills to remove
+  let skillsToRemove: string[];
+
+  if (name) {
+    // Explicit name provided
+    if (!allRemoteNames.has(name)) {
+      console.log(chalk.yellow(`Remote skill "${name}" not found in any agent configuration.`));
+      return;
+    }
+    skillsToRemove = [name];
+  } else {
+    // Interactive checkbox selection
+    const { chosen } = await inquirer.prompt([{
+      type: 'checkbox',
+      name: 'chosen',
+      message: 'Select remote skills to remove:',
+      choices: Array.from(allRemoteNames).map(n => {
+        const sample = config.agents.find(a => a.remoteSkills.some(r => r.name === n));
+        const rs = sample?.remoteSkills.find(r => r.name === n);
+        const source = rs ? chalk.dim(` (${rs.source})`) : '';
+        return { name: `${n}${source}`, value: n };
+      }),
+      validate: (input: string[]) => input.length > 0 || 'Select at least one skill to remove.',
+    }]);
+
+    skillsToRemove = chosen;
+  }
+
+  // Remove selected skills from all agents
+  const affectedAgents = new Set<string>();
+
+  for (const skillName of skillsToRemove) {
+    for (const agent of config.agents) {
+      const agentConfig = getAgentConfig(agent.id);
+      const idx = agent.remoteSkills.findIndex(r => r.name === skillName);
+
+      if (idx >= 0) {
+        const skillDir = path.join(projectDir, agentConfig.skillsDir, skillName);
+        await removeDirectory(skillDir);
+
+        agent.remoteSkills.splice(idx, 1);
+        affectedAgents.add(agent.id);
+        console.log(chalk.green(`  ✓ Removed "${skillName}" from ${agentConfig.displayName}`));
+      }
+    }
+  }
+
   await saveConfig(projectDir, config);
-  console.log(chalk.green(`\n✓ Removed "${name}" from ${removedCount} agent(s)`));
+
+  const skillLabel = skillsToRemove.length === 1 ? `"${skillsToRemove[0]}"` : `${skillsToRemove.length} skill(s)`;
+  const agentLabel = affectedAgents.size === 1 ? '1 agent' : `${affectedAgents.size} agents`;
+  console.log(chalk.green(`\n✓ Removed ${skillLabel} from ${agentLabel}`));
 }
 
 // ─── skill list ──────────────────────────────────────────────
