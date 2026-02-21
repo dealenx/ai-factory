@@ -177,6 +177,16 @@ When called with a description:
 
 **Does NOT implement your project** - only sets up context.
 
+### `/aif-grounded <question or task>`
+Reliability gate that prevents guessing:
+```
+/aif-grounded Explain how feature flags work in this codebase
+/aif-grounded Update dependencies to the latest secure versions (no assumptions)
+```
+- Only provides a final answer if confidence is **100/100** based on evidence (repo files, command output, provided docs)
+- If confidence is < 100, returns **INSUFFICIENT INFORMATION** with a concrete checklist of what’s needed to reach 100
+- Forces verification for changeable facts (“latest”, “current”, version-specific behavior)
+
 ### `/aif-architecture [clean|ddd|microservices|monolith|layers]`
 Generates architecture guidelines tailored to your project:
 ```
