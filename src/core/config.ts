@@ -13,10 +13,20 @@ export interface McpConfig {
   chromeDevtools: boolean;
 }
 
+export interface RemoteSkill {
+  name: string;
+  source: string;
+  path: string;
+  ref: string;
+  version: string;
+  installedAt: string;
+}
+
 export interface AgentInstallation {
   id: string;
   skillsDir: string;
   installedSkills: string[];
+  remoteSkills: RemoteSkill[];
   mcp: McpConfig;
 }
 
@@ -55,6 +65,7 @@ function createAgentInstallation(agentId: string, legacy?: LegacyAiFactoryConfig
     skillsDir: legacy?.skillsDir ?? agent.skillsDir,
     id: agentId,
     installedSkills: legacy?.installedSkills ?? [],
+    remoteSkills: [],
     mcp: normalizeMcp(legacy?.mcp),
   };
 }
@@ -81,6 +92,7 @@ export async function loadConfig(projectDir: string): Promise<AiFactoryConfig | 
         id: agent.id,
         skillsDir: agent.skillsDir || agentConfig.skillsDir,
         installedSkills: Array.isArray(agent.installedSkills) ? agent.installedSkills : [],
+        remoteSkills: Array.isArray(agent.remoteSkills) ? agent.remoteSkills : [],
         mcp: normalizeMcp(agent.mcp),
       };
     });

@@ -99,6 +99,24 @@ export async function getAvailableTemplates(): Promise<string[]> {
   return listDirectories(templatesDir);
 }
 
+export interface InstallRemoteSkillOptions {
+  skillDir: string;
+  skillName: string;
+  projectDir: string;
+  agentId: string;
+}
+
+export async function installRemoteSkill(options: InstallRemoteSkillOptions): Promise<string> {
+  const { skillDir, skillName, projectDir, agentId } = options;
+  const agentConfig = getAgentConfig(agentId);
+
+  const targetDir = path.join(projectDir, agentConfig.skillsDir);
+  await ensureDir(targetDir);
+
+  await installSkillWithTransformer(skillDir, skillName, projectDir, agentConfig.skillsDir, agentId, agentConfig);
+  return skillName;
+}
+
 export async function updateSkills(agentInstallation: AgentInstallation, projectDir: string): Promise<string[]> {
   const availableSkills = await getAvailableSkills();
   const customSkills = agentInstallation.installedSkills.filter(s => s.includes('/'));

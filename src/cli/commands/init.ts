@@ -90,10 +90,15 @@ export async function initCommand(): Promise<void> {
         mcpSummary[agentSelection.id] = configuredMcp;
       }
 
+      // Preserve remote skills from previous config if the agent existed before
+      const previousAgent = existingConfig?.agents.find(a => a.id === agentSelection.id);
+      const remoteSkills = previousAgent?.remoteSkills ?? [];
+
       installedAgents.push({
         id: agentSelection.id,
         skillsDir: agentConfig.skillsDir,
         installedSkills,
+        remoteSkills,
         mcp: {
           github: agentSelection.mcpGithub,
           filesystem: agentSelection.mcpFilesystem,

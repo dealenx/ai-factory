@@ -67,6 +67,13 @@ export async function updateCommand(): Promise<void> {
           console.log(chalk.dim(`  - ${skill}`));
         }
       }
+
+      if (agent.remoteSkills && agent.remoteSkills.length > 0) {
+        console.log(chalk.bold(`[${agent.id}] Remote skills (preserved):`));
+        for (const rs of agent.remoteSkills) {
+          console.log(chalk.dim(`  - ${rs.name} (${rs.source})`));
+        }
+      }
     }
     console.log('');
 
