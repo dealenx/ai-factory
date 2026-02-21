@@ -3,6 +3,14 @@ import os from 'os';
 import { execSync } from 'child_process';
 import { fileExists, readTextFile, listDirectories, removeDirectory, ensureDir } from '../utils/fs.js';
 
+/** Timeout controller helper for fetch calls. */
+function fetchWithTimeout(url: string, init: RequestInit & { timeout?: number } = {}): Promise<Response> {
+  const { timeout = 15000, ...rest } = init;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  return fetch(url, { ...rest, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
 export interface RemoteSource {
   host: 'github';
   owner: string;
@@ -33,7 +41,7 @@ export function parseRemoteSource(uri: string): RemoteSource {
   }
 
   let body = uri.slice('github:'.length);
-  let ref = 'main';
+  let ref = '';
 
   const hashIdx = body.indexOf('#');
   if (hashIdx !== -1) {
@@ -61,34 +69,76 @@ export function formatSourceUri(source: RemoteSource): string {
   if (source.skillPath) {
     uri += `/${source.skillPath}`;
   }
-  if (source.ref !== 'main') {
+  if (source.ref && source.ref !== 'main') {
     uri += `#${source.ref}`;
   }
   return uri;
 }
 
 /**
+ * Convert a Windows path to POSIX format for tools that need it (e.g. tar).
+ * On Windows, C:\Users\... becomes /c/Users/...
+ *
+ * Note: Windows `curl.exe` expects native Windows paths — do NOT convert
+ * paths passed to curl. Only `tar` (GNU tar from Git for Windows) needs
+ * POSIX paths because it interprets `C:` as a remote host otherwise.
+ */
+function toPosixPath(p: string): string {
+  if (process.platform !== 'win32') return p;
+  return p.replace(/\\/g, '/').replace(/^([A-Za-z]):/, (_m, d: string) => '/' + d.toLowerCase());
+}
+
+/**
+ * Resolve the default branch for a GitHub repository.
+ * Falls back to 'main' if the API call fails.
+ */
+async function resolveDefaultBranch(owner: string, repo: string): Promise<string> {
+  try {
+    const res = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers: { Accept: 'application/vnd.github.v3+json' },
+    });
+    if (res.ok) {
+      const data = await res.json() as { default_branch?: string };
+      if (data.default_branch) return data.default_branch;
+    }
+  } catch {
+    // API failed, fall back to 'main'
+  }
+  return 'main';
+}
+
+/**
  * Download a repository archive and extract it to a temp directory.
  * Returns the path to the extracted repo root.
+ * Also mutates source.ref to the resolved branch if it was empty.
  */
 export async function downloadAndExtract(source: RemoteSource): Promise<string> {
+  // Resolve default branch if not specified
+  if (!source.ref) {
+    source.ref = await resolveDefaultBranch(source.owner, source.repo);
+  }
+
   const tmpBase = path.join(os.tmpdir(), `ai-factory-remote-${Date.now()}`);
   await ensureDir(tmpBase);
 
   const archiveUrl = `https://github.com/${source.owner}/${source.repo}/archive/refs/heads/${source.ref}.tar.gz`;
 
   try {
-    // Download and extract using tar (available on macOS, Linux, and Windows with Git)
+    // Download and extract using curl + tar (available on macOS, Linux, and Windows with Git)
     const archivePath = path.join(tmpBase, 'archive.tar.gz');
 
-    // Use curl for download (available on all modern OS)
+    // curl on Windows expects native Windows paths.
+    // tar (GNU tar from Git for Windows) needs POSIX paths to avoid
+    // interpreting "C:" as a remote host.
     execSync(`curl -fsSL -o "${archivePath}" "${archiveUrl}"`, {
       timeout: 60000,
       stdio: 'pipe',
     });
 
-    // Extract
-    execSync(`tar -xzf "${archivePath}" -C "${tmpBase}"`, {
+    // Extract — use POSIX paths for tar on Windows
+    const archivePathPosix = toPosixPath(archivePath);
+    const tmpBasePosix = toPosixPath(tmpBase);
+    execSync(`tar -xzf "${archivePathPosix}" -C "${tmpBasePosix}"`, {
       timeout: 30000,
       stdio: 'pipe',
     });
@@ -120,15 +170,18 @@ export async function downloadAndExtract(source: RemoteSource): Promise<string> 
  */
 export async function resolveCommitHash(source: RemoteSource): Promise<string> {
   try {
-    const output = execSync(
-      `curl -fsSL "https://api.github.com/repos/${source.owner}/${source.repo}/commits/${source.ref}" -H "Accept: application/vnd.github.sha"`,
-      { timeout: 15000, stdio: 'pipe', encoding: 'utf-8' },
+    const res = await fetchWithTimeout(
+      `https://api.github.com/repos/${source.owner}/${source.repo}/commits/${source.ref}`,
+      { headers: { Accept: 'application/vnd.github.sha' } },
     );
-    return output.trim().slice(0, 12);
+    if (res.ok) {
+      const text = await res.text();
+      return text.trim().slice(0, 12);
+    }
   } catch {
-    // Fallback: use timestamp as version if API fails
-    return `unknown-${Date.now()}`;
+    // Fallback below
   }
+  return `unknown-${Date.now()}`;
 }
 
 /**
