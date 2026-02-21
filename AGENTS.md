@@ -9,7 +9,7 @@
 1. **CLI tool** (`ai-factory init/update/upgrade`) — installs skills and configures MCP
 2. **Built-in skills** (22 skills, all `aif-*` prefixed) — workflow commands for spec-driven development
 3. **Spec-driven workflow** — structured approach: plan → implement → commit
-4. **Multi-agent support** — 14 agents (Claude Code, Cursor, Windsurf, Roo Code, Kilo Code, Antigravity, OpenCode, Warp, Zencoder, Codex CLI, GitHub Copilot, Gemini CLI, Junie, Universal)
+4. **Multi-agent support** — 15 agents (Claude Code, Cursor, Windsurf, Roo Code, Kilo Code, Antigravity, OpenCode, Warp, Zencoder, Codex CLI, GitHub Copilot, Gemini CLI, Junie, Qwen Code, Universal)
 
 ## Project Structure
 
@@ -239,7 +239,7 @@ ai-factory upgrade
 | `src/cli/commands/upgrade.ts` | v1→v2 migration: remove old bare names, install prefixed |
 | `src/cli/wizard/prompts.ts` | Interactive CLI questions |
 | `src/cli/wizard/detector.ts` | Stack detection logic |
-| `src/core/agents.ts` | Agent registry (14 agents) |
+| `src/core/agents.ts` | Agent registry (15 agents) |
 | `src/core/installer.ts` | Copies skills to project |
 | `src/core/mcp.ts` | MCP server configuration |
 | `src/core/template.ts` | `{{var}}` template substitution in SKILL.md |

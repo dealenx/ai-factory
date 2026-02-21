@@ -63,6 +63,15 @@ const AGENT_REGISTRY: Record<string, AgentConfig> = {
     supportsMcp: false,
     skillsCliAgent: 'junie',
   },
+  qwen: {
+    id: 'qwen',
+    displayName: 'Qwen Code',
+    configDir: '.qwen',
+    skillsDir: '.qwen/skills',
+    settingsFile: '.qwen/settings.json',
+    supportsMcp: true,
+    skillsCliAgent: null,
+  },
   windsurf: {
     id: 'windsurf',
     displayName: 'Windsurf',
