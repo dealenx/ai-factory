@@ -338,6 +338,53 @@ export async function skillUpdateCommand(name?: string): Promise<void> {
     return;
   }
 
+  // If no specific name given and multiple skills exist, ask what to update
+  if (!name) {
+    const allSkillNames = new Set<string>();
+    for (const [, group] of sourceGroups) {
+      for (const s of group.skills) {
+        allSkillNames.add(s.skillName);
+      }
+    }
+
+    if (allSkillNames.size > 1) {
+      const { mode } = await inquirer.prompt([{
+        type: 'list',
+        name: 'mode',
+        message: 'What would you like to update?',
+        choices: [
+          { name: 'All remote skills', value: 'all' },
+          { name: 'Select skills to update', value: 'select' },
+        ],
+      }]);
+
+      if (mode === 'select') {
+        const { chosen } = await inquirer.prompt([{
+          type: 'checkbox',
+          name: 'chosen',
+          message: 'Select skills to update:',
+          choices: Array.from(allSkillNames).map(n => {
+            const sample = config.agents.find(a => a.remoteSkills.some(r => r.name === n));
+            const rs = sample?.remoteSkills.find(r => r.name === n);
+            const source = rs ? chalk.dim(` (${rs.source})`) : '';
+            return { name: `${n}${source}`, value: n };
+          }),
+          validate: (input: string[]) => input.length > 0 || 'Select at least one skill to update.',
+        }]);
+
+        // Filter source groups to only include chosen skills
+        for (const [key, group] of sourceGroups) {
+          group.skills = group.skills.filter(s => chosen.includes(s.skillName));
+          if (group.skills.length === 0) {
+            sourceGroups.delete(key);
+          }
+        }
+      }
+    }
+
+    console.log('');
+  }
+
   let updatedCount = 0;
   let upToDateCount = 0;
 
@@ -353,8 +400,15 @@ export async function skillUpdateCommand(name?: string): Promise<void> {
     const latestVersion = await resolveCommitHash(source);
 
     if (latestVersion === group.currentVersion) {
+      // Deduplicate by skill name, collect agent names
+      const skillAgents = new Map<string, string[]>();
       for (const s of group.skills) {
-        console.log(chalk.dim(`  ${s.skillName}: already up to date (${group.currentVersion})`));
+        const agentName = getAgentConfig(config.agents[s.agentIdx].id).displayName;
+        if (!skillAgents.has(s.skillName)) skillAgents.set(s.skillName, []);
+        skillAgents.get(s.skillName)!.push(agentName);
+      }
+      for (const [skillName, agents] of skillAgents) {
+        console.log(chalk.dim(`  ${skillName}: already up to date (${group.currentVersion}) [${agents.join(', ')}]`));
         upToDateCount++;
       }
       continue;
@@ -384,6 +438,7 @@ export async function skillUpdateCommand(name?: string): Promise<void> {
         }
 
         const agent = config.agents[s.agentIdx];
+        const agentName = getAgentConfig(agent.id).displayName;
 
         await installRemoteSkill({
           skillDir: detected.dirPath,
@@ -395,7 +450,7 @@ export async function skillUpdateCommand(name?: string): Promise<void> {
         agent.remoteSkills[s.remoteIdx].version = latestVersion;
         agent.remoteSkills[s.remoteIdx].installedAt = new Date().toISOString();
 
-        console.log(chalk.green(`  ✓ ${s.skillName}: updated ${group.currentVersion} → ${latestVersion}`));
+        console.log(chalk.green(`  ✓ ${s.skillName}: updated ${group.currentVersion} → ${latestVersion} [${agentName}]`));
         updatedCount++;
       }
     } finally {
