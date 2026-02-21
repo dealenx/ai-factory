@@ -1,6 +1,7 @@
 import path from 'path';
 import os from 'os';
-import { execSync } from 'child_process';
+import fs from 'fs';
+import zlib from 'zlib';
 import { fileExists, readTextFile, listDirectories, removeDirectory, ensureDir } from '../utils/fs.js';
 
 /** Timeout controller helper for fetch calls. */
@@ -27,6 +28,42 @@ export interface DetectedSkill {
 }
 
 /**
+ * Convert a GitHub URL to the internal github: format.
+ *
+ * Examples:
+ *   https://github.com/owner/repo          → github:owner/repo
+ *   https://github.com/owner/repo.git      → github:owner/repo
+ *   https://github.com/owner/repo/tree/dev → github:owner/repo#dev
+ *   https://github.com/owner/repo/tree/dev/path/to/skill → github:owner/repo/path/to/skill#dev
+ */
+function normalizeGitHubUrl(url: string): string {
+  // Strip trailing slash and .git suffix
+  let cleaned = url.replace(/\/+$/, '').replace(/\.git$/, '');
+
+  // Remove protocol + host
+  const match = cleaned.match(/^https?:\/\/github\.com\/(.+)$/);
+  if (!match) return url;
+
+  const segments = match[1].split('/');
+  if (segments.length < 2) return url;
+
+  const owner = segments[0];
+  const repo = segments[1];
+
+  // /tree/<ref>[/path...] pattern
+  if (segments.length >= 4 && segments[2] === 'tree') {
+    const ref = segments[3];
+    const skillPath = segments.length > 4 ? segments.slice(4).join('/') : '';
+    let result = `github:${owner}/${repo}`;
+    if (skillPath) result += `/${skillPath}`;
+    result += `#${ref}`;
+    return result;
+  }
+
+  return `github:${owner}/${repo}`;
+}
+
+/**
  * Parse a remote source URI.
  *
  * Supported formats:
@@ -34,10 +71,18 @@ export interface DetectedSkill {
  *   github:owner/repo#ref
  *   github:owner/repo/skill-path
  *   github:owner/repo/skill-path#ref
+ *   https://github.com/owner/repo
+ *   https://github.com/owner/repo/tree/branch
+ *   https://github.com/owner/repo/tree/branch/skill-path
  */
 export function parseRemoteSource(uri: string): RemoteSource {
+  // Normalize GitHub URLs to github: format
+  if (uri.startsWith('https://github.com/') || uri.startsWith('http://github.com/')) {
+    uri = normalizeGitHubUrl(uri);
+  }
+
   if (!uri.startsWith('github:')) {
-    throw new Error(`Unsupported source format: "${uri}". Use github:owner/repo`);
+    throw new Error(`Unsupported source format: "${uri}". Use github:owner/repo or https://github.com/owner/repo`);
   }
 
   let body = uri.slice('github:'.length);
@@ -76,12 +121,7 @@ export function formatSourceUri(source: RemoteSource): string {
 }
 
 /**
- * Convert a Windows path to POSIX format for tools that need it (e.g. tar).
- * On Windows, C:\Users\... becomes /c/Users/...
- *
- * Note: Windows `curl.exe` expects native Windows paths — do NOT convert
- * paths passed to curl. Only `tar` (GNU tar from Git for Windows) needs
- * POSIX paths because it interprets `C:` as a remote host otherwise.
+ * Format a RemoteSource back to a URI string.
  */
 function toPosixPath(p: string): string {
   if (process.platform !== 'win32') return p;
@@ -111,6 +151,8 @@ async function resolveDefaultBranch(owner: string, repo: string): Promise<string
  * Download a repository archive and extract it to a temp directory.
  * Returns the path to the extracted repo root.
  * Also mutates source.ref to the resolved branch if it was empty.
+ *
+ * Uses Node.js native fetch + zlib + tar parser — no shell dependencies.
  */
 export async function downloadAndExtract(source: RemoteSource): Promise<string> {
   // Resolve default branch if not specified
@@ -124,24 +166,19 @@ export async function downloadAndExtract(source: RemoteSource): Promise<string> 
   const archiveUrl = `https://github.com/${source.owner}/${source.repo}/archive/refs/heads/${source.ref}.tar.gz`;
 
   try {
-    // Download and extract using curl + tar (available on macOS, Linux, and Windows with Git)
-    const archivePath = path.join(tmpBase, 'archive.tar.gz');
+    // Download tarball via fetch
+    const res = await fetchWithTimeout(archiveUrl, { timeout: 60000 });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} from ${archiveUrl}`);
+    }
 
-    // curl on Windows expects native Windows paths.
-    // tar (GNU tar from Git for Windows) needs POSIX paths to avoid
-    // interpreting "C:" as a remote host.
-    execSync(`curl -fsSL -o "${archivePath}" "${archiveUrl}"`, {
-      timeout: 60000,
-      stdio: 'pipe',
-    });
+    const buffer = Buffer.from(await res.arrayBuffer());
 
-    // Extract — use POSIX paths for tar on Windows
-    const archivePathPosix = toPosixPath(archivePath);
-    const tmpBasePosix = toPosixPath(tmpBase);
-    execSync(`tar -xzf "${archivePathPosix}" -C "${tmpBasePosix}"`, {
-      timeout: 30000,
-      stdio: 'pipe',
-    });
+    // Decompress gzip → raw tar
+    const tarBuffer = zlib.gunzipSync(buffer);
+
+    // Extract tar archive using pure Node.js parser
+    extractTar(tarBuffer, tmpBase);
 
     // GitHub archives extract to {repo}-{ref}/ directory
     const entries = await listDirectories(tmpBase);
@@ -155,13 +192,66 @@ export async function downloadAndExtract(source: RemoteSource): Promise<string> 
   } catch (error) {
     await removeDirectory(tmpBase).catch(() => {});
     const msg = (error as Error).message;
-    if (msg.includes('curl') || msg.includes('404')) {
+    if (msg.includes('HTTP') || msg.includes('fetch') || msg.includes('404')) {
       throw new Error(
         `Failed to download from ${archiveUrl}. ` +
         `Check that the repository "${source.owner}/${source.repo}" exists and branch "${source.ref}" is correct.`
       );
     }
     throw error;
+  }
+}
+
+/**
+ * Minimal tar extractor — reads a POSIX/UStar tar buffer and writes files to disk.
+ * Supports regular files and directories. Handles long names via pax headers (type 'x').
+ */
+function extractTar(tar: Buffer, destDir: string): void {
+  let offset = 0;
+  let paxPath = '';
+
+  while (offset + 512 <= tar.length) {
+    const header = tar.subarray(offset, offset + 512);
+
+    // End-of-archive: two consecutive zero blocks
+    if (header.every(b => b === 0)) break;
+
+    // Parse header fields
+    const rawName = header.subarray(0, 100).toString('utf-8').replace(/\0+$/, '');
+    const sizeStr = header.subarray(124, 136).toString('utf-8').replace(/\0+$/, '').trim();
+    const typeFlag = String.fromCharCode(header[156]);
+    const prefix = header.subarray(345, 500).toString('utf-8').replace(/\0+$/, '');
+
+    const fileSize = sizeStr ? parseInt(sizeStr, 8) : 0;
+    const entryName = paxPath || (prefix ? `${prefix}/${rawName}` : rawName);
+    paxPath = ''; // reset after use
+
+    offset += 512; // advance past header
+
+    if (typeFlag === 'x' || typeFlag === 'g') {
+      // Pax extended header — extract path= field
+      const paxData = tar.subarray(offset, offset + fileSize).toString('utf-8');
+      const pathMatch = paxData.match(/(?:^|\n)\d+ path=([^\n]+)/);
+      if (pathMatch) paxPath = pathMatch[1];
+      offset += Math.ceil(fileSize / 512) * 512;
+      continue;
+    }
+
+    if (typeFlag === '5' || entryName.endsWith('/')) {
+      // Directory
+      const dirPath = path.join(destDir, entryName);
+      fs.mkdirSync(dirPath, { recursive: true });
+    } else if (typeFlag === '0' || typeFlag === '' || typeFlag === '\0') {
+      // Regular file
+      const filePath = path.join(destDir, entryName);
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      const data = tar.subarray(offset, offset + fileSize);
+      fs.writeFileSync(filePath, data);
+    }
+    // Skip symlinks, hardlinks, etc.
+
+    // Advance past data blocks (512-byte aligned)
+    offset += Math.ceil(fileSize / 512) * 512;
   }
 }
 
