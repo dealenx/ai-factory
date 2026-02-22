@@ -1,4 +1,4 @@
-[← Plan Files](plan-files.md) · [Back to README](../README.md) · [Configuration →](configuration.md)
+[← Plan Files](plan-files.md) · [Back to README](../README.md) · [Extensions →](extensions.md)
 
 # Security
 
@@ -86,4 +86,5 @@ python3 .claude/skills/aif-skill-generator/scripts/security-scan.py ./my-skill/S
 
 - [Core Skills](skills.md) — `/aif-security-checklist` for project-level security audits
 - [Plan Files](plan-files.md) — skill acquisition strategy and how scanning fits in
+- [Extensions](extensions.md) — extension system and its security model
 - [Configuration](configuration.md) — MCP servers and project structure

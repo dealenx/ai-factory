@@ -7,6 +7,7 @@ import { configureMcp, getMcpInstructions } from '../../core/mcp.js';
 import { getAgentConfig } from '../../core/agents.js';
 import { cleanupAgentSetup, getAgentOnboarding } from '../../core/transformer.js';
 import { removeDirectory } from '../../utils/fs.js';
+import { applyExtensionInjections } from '../../core/injections.js';
 
 async function removeAgentSetup(projectDir: string, agent: AgentInstallation): Promise<void> {
   await removeDirectory(path.join(projectDir, agent.skillsDir));
@@ -81,10 +82,24 @@ export async function initCommand(): Promise<void> {
       });
     }
 
+    const existingExtensions = existingConfig?.extensions ?? [];
+
     await saveConfig(projectDir, {
       version: getCurrentVersion(),
       agents: installedAgents,
+      extensions: existingExtensions,
     });
+
+    // Re-apply extension injections after skill installation
+    if (existingExtensions.length > 0) {
+      let totalInjections = 0;
+      for (const agent of installedAgents) {
+        totalInjections += await applyExtensionInjections(projectDir, agent, existingExtensions);
+      }
+      if (totalInjections > 0) {
+        console.log(chalk.green(`✓ Re-applied ${totalInjections} extension injection(s)`));
+      }
+    }
 
     console.log(chalk.green('✓ Configuration saved to .ai-factory.json'));
 

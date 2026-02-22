@@ -70,6 +70,15 @@ ai-factory update
 
 # Migrate existing skills from v1 naming to v2 naming
 ai-factory upgrade
+
+# Install an extension (local path, git URL, or npm package)
+ai-factory extension add ./my-extension
+
+# List installed extensions
+ai-factory extension list
+
+# Remove extension
+ai-factory extension remove my-extension
 ```
 
 For v1 -> v2 migration, run both commands in order:

@@ -142,3 +142,66 @@ export function getMcpInstructions(servers: string[]): string[] {
     .filter(server => selected.has(server.key))
     .map(server => server.instruction);
 }
+
+export async function configureExtensionMcpServers(
+  projectDir: string,
+  agentId: string,
+  servers: { key: string; template: McpServerConfig }[],
+): Promise<string[]> {
+  const agent = getAgentConfig(agentId);
+  if (!agent.supportsMcp || !agent.settingsFile) {
+    return [];
+  }
+
+  const format: McpSettingsFormat = agentId === 'opencode' ? 'opencode' : 'standard';
+  const settingsPath = path.join(projectDir, agent.settingsFile);
+  await ensureDir(path.dirname(settingsPath));
+  const settings = await loadSettings(settingsPath);
+  const configured: string[] = [];
+
+  for (const { key, template } of servers) {
+    if (format === 'opencode') {
+      ensureNestedRecord(settings, 'mcp')[key] = toOpenCodeFormat(template);
+    } else {
+      ensureNestedRecord(settings, 'mcpServers')[key] = template;
+    }
+    configured.push(key);
+  }
+
+  if (configured.length > 0) {
+    await writeJsonFile(settingsPath, settings);
+  }
+
+  return configured;
+}
+
+export async function removeExtensionMcpServers(
+  projectDir: string,
+  agentId: string,
+  keys: string[],
+): Promise<void> {
+  const agent = getAgentConfig(agentId);
+  if (!agent.supportsMcp || !agent.settingsFile) {
+    return;
+  }
+
+  const format: McpSettingsFormat = agentId === 'opencode' ? 'opencode' : 'standard';
+  const settingsPath = path.join(projectDir, agent.settingsFile);
+  const settings = await loadSettings(settingsPath);
+  const containerKey = format === 'opencode' ? 'mcp' : 'mcpServers';
+  const container = settings[containerKey];
+
+  if (!isRecord(container)) return;
+
+  let changed = false;
+  for (const key of keys) {
+    if (key in container) {
+      delete container[key];
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    await writeJsonFile(settingsPath, settings);
+  }
+}

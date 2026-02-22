@@ -1,4 +1,4 @@
-[← Security](security.md) · [Back to README](../README.md)
+[← Extensions](extensions.md) · [Back to README](../README.md)
 
 # Configuration
 
@@ -6,7 +6,7 @@
 
 ```json
 {
-  "version": "2.0.0",
+  "version": "2.2.0",
   "agents": [
     {
       "id": "claude",
@@ -30,11 +30,20 @@
         "chromeDevtools": false
       }
     }
+  ],
+  "extensions": [
+    {
+      "name": "aif-ext-example",
+      "source": "https://github.com/user/aif-ext-example.git",
+      "version": "1.0.0"
+    }
   ]
 }
 ```
 
 The `agents` array can include any supported agent IDs: `claude`, `cursor`, `windsurf`, `roocode`, `kilocode`, `antigravity`, `opencode`, `warp`, `zencoder`, `codex`, `copilot`, `gemini`, `junie`, or `universal`. Each agent keeps its own `skillsDir`, installed skills list, and MCP preferences.
+
+The optional `extensions` array tracks installed extensions by name, original source, and version.
 
 ## MCP Configuration
 
@@ -95,6 +104,9 @@ your-project/
 │   ├── ARCHITECTURE.md        # Architecture decisions and guidelines
 │   ├── PLAN.md                # Current plan (from /aif-plan fast)
 │   ├── SECURITY.md            # Ignored security items (from /aif-security-checklist ignore)
+│   ├── extensions/            # Installed extensions (from ai-factory extension add)
+│   │   └── <extension-name>/
+│   │       └── extension.json
 │   ├── plans/                 # Plans from /aif-plan full
 │   │   └── <branch-name>.md
 │   ├── patches/               # Self-improvement patches (from /aif-fix)
@@ -145,4 +157,5 @@ All implementations include verbose, configurable logging:
 - [Getting Started](getting-started.md) — installation, supported agents, first project
 - [Development Workflow](workflow.md) — how to use the workflow skills
 - [Reflex Loop](loop.md) — contracts and storage layout for `/aif-loop`
+- [Extensions](extensions.md) — writing and installing extensions
 - [Security](security.md) — how external skills are scanned before use

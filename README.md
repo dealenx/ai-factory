@@ -144,6 +144,7 @@ AI Factory can generate and maintain your project docs with a single command:
 | [Core Skills](docs/skills.md) | All slash commands — feature, task, fix, implement, evolve, docs, and more |
 | [Plan Files](docs/plan-files.md) | Plan files, self-improvement patches, skill acquisition |
 | [Security](docs/security.md) | Two-level security scanning for external skills |
+| [Extensions](docs/extensions.md) | Writing and installing extensions — commands, injections, MCP, agents |
 | [Configuration](docs/configuration.md) | `.ai-factory.json`, MCP servers, project structure, best practices |
 
 ---

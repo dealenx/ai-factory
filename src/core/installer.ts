@@ -1,5 +1,5 @@
 import path from 'path';
-import { copyDirectory, getSkillsDir, ensureDir, listDirectories, readTextFile, writeTextFile } from '../utils/fs.js';
+import { copyDirectory, getSkillsDir, ensureDir, listDirectories, readTextFile, writeTextFile, removeDirectory } from '../utils/fs.js';
 import type { AgentInstallation } from './config.js';
 import { getAgentConfig } from './agents.js';
 import { processSkillTemplates, buildTemplateVars, processTemplate } from './template.js';
@@ -99,6 +99,58 @@ export async function getAvailableSkills(): Promise<string[]> {
   const packageSkillsDir = getSkillsDir();
   const dirs = await listDirectories(packageSkillsDir);
   return dirs.filter(dir => !dir.startsWith('_'));
+}
+
+export async function installExtensionSkills(
+  projectDir: string,
+  agentInstallation: AgentInstallation,
+  extensionDir: string,
+  skillPaths: string[],
+): Promise<string[]> {
+  const agentConfig = getAgentConfig(agentInstallation.id);
+  const installed: string[] = [];
+
+  for (const skillPath of skillPaths) {
+    const sourceDir = path.join(extensionDir, skillPath);
+    const skillName = path.basename(skillPath);
+    try {
+      await installSkillWithTransformer(sourceDir, skillName, projectDir, agentInstallation.skillsDir, agentInstallation.id, agentConfig);
+      installed.push(skillName);
+    } catch (error) {
+      console.warn(`Warning: Could not install extension skill "${skillName}": ${error}`);
+    }
+  }
+
+  return installed;
+}
+
+export async function removeExtensionSkills(
+  projectDir: string,
+  agentInstallation: AgentInstallation,
+  skillPaths: string[],
+): Promise<string[]> {
+  const agentConfig = getAgentConfig(agentInstallation.id);
+  const transformer = getTransformer(agentInstallation.id);
+  const removed: string[] = [];
+
+  for (const skillPath of skillPaths) {
+    const skillName = path.basename(skillPath);
+    try {
+      const result = transformer.transform(skillName, '');
+      if (result.flat) {
+        const targetPath = path.join(projectDir, agentConfig.configDir, result.targetDir, result.targetName);
+        await removeDirectory(targetPath);
+      } else {
+        const targetSkillDir = path.join(projectDir, agentInstallation.skillsDir, result.targetDir);
+        await removeDirectory(targetSkillDir);
+      }
+      removed.push(skillName);
+    } catch {
+      // Skill may not exist, ignore
+    }
+  }
+
+  return removed;
 }
 
 export async function updateSkills(agentInstallation: AgentInstallation, projectDir: string): Promise<string[]> {

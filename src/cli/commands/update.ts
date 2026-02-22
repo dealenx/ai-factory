@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import {getCurrentVersion, loadConfig, saveConfig} from '../../core/config.js';
 import {getAvailableSkills, partitionSkills, updateSkills} from '../../core/installer.js';
+import {applyExtensionInjections} from '../../core/injections.js';
 
 export async function updateCommand(): Promise<void> {
   const projectDir = process.cwd();
@@ -42,6 +43,18 @@ export async function updateCommand(): Promise<void> {
     for (const agent of config.agents) {
       agent.installedSkills = await updateSkills(agent, projectDir);
     }
+
+    // Re-apply extension injections
+    if (config.extensions?.length) {
+      let totalInjections = 0;
+      for (const agent of config.agents) {
+        totalInjections += await applyExtensionInjections(projectDir, agent, config.extensions!);
+      }
+      if (totalInjections > 0) {
+        console.log(chalk.green(`✓ Re-applied ${totalInjections} extension injection(s)`));
+      }
+    }
+
     config.version = currentVersion;
     await saveConfig(projectDir, config);
 

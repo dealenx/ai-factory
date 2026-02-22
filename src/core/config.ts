@@ -20,9 +20,16 @@ export interface AgentInstallation {
   mcp: McpConfig;
 }
 
+export interface ExtensionRecord {
+  name: string;
+  source: string;
+  version: string;
+}
+
 export interface AiFactoryConfig {
   version: string;
   agents: AgentInstallation[];
+  extensions?: ExtensionRecord[];
 }
 
 interface LegacyAiFactoryConfig {
@@ -80,6 +87,7 @@ export async function loadConfig(projectDir: string): Promise<AiFactoryConfig | 
     return {
       version: raw.version ?? CURRENT_VERSION,
       agents: normalizedAgents,
+      extensions: Array.isArray(raw.extensions) ? raw.extensions : [],
     };
   }
 
@@ -87,12 +95,14 @@ export async function loadConfig(projectDir: string): Promise<AiFactoryConfig | 
     return {
       version: raw.version ?? CURRENT_VERSION,
       agents: [createAgentInstallation(raw.agent, raw)],
+      extensions: [],
     };
   }
 
   return {
     version: raw.version ?? CURRENT_VERSION,
     agents: [],
+    extensions: [],
   };
 }
 
