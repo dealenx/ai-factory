@@ -25,6 +25,7 @@ export interface ExtensionRecord {
   name: string;
   source: string;
   version: string;
+  replacedSkills?: string[];
 }
 
 export interface AiFactoryConfig {

@@ -38,15 +38,23 @@ export interface ExtensionManifest {
   agents?: ExtensionAgentDef[];
   injections?: ExtensionInjection[];
   skills?: string[];
+  replaces?: Record<string, string>;
   mcpServers?: ExtensionMcpServer[];
 }
 
 const EXTENSIONS_DIR = 'extensions';
 const SAFE_NAME_PATTERN = /^[a-zA-Z0-9_@][\w.@/-]*$/;
+const SAFE_SKILL_NAME_PATTERN = /^[a-zA-Z0-9][\w.-]*$/;
 
 export function validateExtensionName(name: string): void {
   if (!SAFE_NAME_PATTERN.test(name) || name.includes('..') || path.isAbsolute(name)) {
     throw new Error(`Invalid extension name: "${name}". Names must be alphanumeric (with -, _, @, /) and cannot contain ".." or absolute paths.`);
+  }
+}
+
+export function validateSkillName(name: string): void {
+  if (!SAFE_SKILL_NAME_PATTERN.test(name) || name.includes('..') || name.includes('/') || name.includes('\\') || path.isAbsolute(name)) {
+    throw new Error(`Invalid skill name: "${name}". Skill names must be simple identifiers (letters, digits, -, _, .).`);
   }
 }
 
@@ -61,6 +69,11 @@ export async function loadExtensionManifest(extensionDir: string): Promise<Exten
     return null;
   }
   validateExtensionName(manifest.name);
+  if (manifest.replaces) {
+    for (const baseSkillName of Object.values(manifest.replaces)) {
+      validateSkillName(baseSkillName);
+    }
+  }
   return manifest;
 }
 
@@ -99,93 +112,106 @@ function isLocalPath(source: string): boolean {
   return source.startsWith('./') || source.startsWith('/') || source.startsWith('../') || path.isAbsolute(source);
 }
 
-export async function installExtensionFromLocal(projectDir: string, sourcePath: string): Promise<ExtensionManifest> {
+// Two-phase install: resolve (download/validate) then commit (copy to project).
+// This allows callers to inspect the manifest and check constraints before any files are written.
+
+export interface ResolvedExtension {
+  manifest: ExtensionManifest;
+  sourceDir: string;
+  tempDir?: string; // set for git/npm — caller must call cleanup()
+  cleanup: () => Promise<void>;
+}
+
+async function resolveFromLocal(sourcePath: string): Promise<ResolvedExtension> {
   const resolvedSource = path.resolve(sourcePath);
   const manifest = await loadExtensionManifest(resolvedSource);
   if (!manifest) {
     throw new Error(`Invalid extension: no valid extension.json found in ${resolvedSource}`);
   }
-
-  // validateExtensionName already called inside loadExtensionManifest
-  const targetDir = path.join(getExtensionsDir(projectDir), manifest.name);
-  await ensureDir(targetDir);
-  await fs.copy(resolvedSource, targetDir, { overwrite: true });
-
-  return manifest;
+  return { manifest, sourceDir: resolvedSource, cleanup: async () => {} };
 }
 
-export async function installExtensionFromNpm(projectDir: string, packageName: string): Promise<ExtensionManifest> {
+async function resolveFromNpm(projectDir: string, packageName: string): Promise<ResolvedExtension> {
   const { execFileSync } = await import('child_process');
   const tmpDir = path.join(getExtensionsDir(projectDir), '.tmp-install');
+  await removeDirectory(tmpDir);
   await ensureDir(tmpDir);
 
-  try {
-    execFileSync('npm', ['pack', packageName, '--pack-destination', tmpDir], { stdio: 'pipe' });
+  execFileSync('npm', ['pack', packageName, '--pack-destination', tmpDir], { stdio: 'pipe' });
 
-    const files = await fs.readdir(tmpDir);
-    const tgzFile = files.find(f => f.endsWith('.tgz'));
-    if (!tgzFile) throw new Error('npm pack produced no output');
-
-    const extractDir = path.join(tmpDir, 'extracted');
-    await ensureDir(extractDir);
-    execFileSync('tar', ['-xzf', path.join(tmpDir, tgzFile), '-C', extractDir], { stdio: 'pipe' });
-
-    const packageDir = path.join(extractDir, 'package');
-    const manifest = await loadExtensionManifest(packageDir);
-    if (!manifest) {
-      throw new Error(`Invalid extension: no valid extension.json in ${packageName}`);
-    }
-
-    // validateExtensionName already called inside loadExtensionManifest
-    const targetDir = path.join(getExtensionsDir(projectDir), manifest.name);
-    await ensureDir(targetDir);
-    await fs.copy(packageDir, targetDir, { overwrite: true });
-
-    return manifest;
-  } finally {
+  const files = await fs.readdir(tmpDir);
+  const tgzFile = files.find(f => f.endsWith('.tgz'));
+  if (!tgzFile) {
     await removeDirectory(tmpDir);
+    throw new Error('npm pack produced no output');
   }
+
+  const extractDir = path.join(tmpDir, 'extracted');
+  await ensureDir(extractDir);
+  execFileSync('tar', ['-xzf', path.join(tmpDir, tgzFile), '-C', extractDir], { stdio: 'pipe' });
+
+  const packageDir = path.join(extractDir, 'package');
+  const manifest = await loadExtensionManifest(packageDir);
+  if (!manifest) {
+    await removeDirectory(tmpDir);
+    throw new Error(`Invalid extension: no valid extension.json in ${packageName}`);
+  }
+
+  return { manifest, sourceDir: packageDir, tempDir: tmpDir, cleanup: () => removeDirectory(tmpDir) };
 }
 
-export async function installExtensionFromGit(projectDir: string, url: string): Promise<ExtensionManifest> {
+async function resolveFromGit(projectDir: string, url: string): Promise<ResolvedExtension> {
   const { execFileSync } = await import('child_process');
   const tmpDir = path.join(getExtensionsDir(projectDir), '.tmp-clone');
+  await removeDirectory(tmpDir);
 
-  try {
+  const cleanUrl = url.replace(/^git\+/, '');
+  execFileSync('git', ['clone', '--depth', '1', cleanUrl, tmpDir], { stdio: 'pipe' });
+
+  const manifest = await loadExtensionManifest(tmpDir);
+  if (!manifest) {
     await removeDirectory(tmpDir);
-    const cleanUrl = url.replace(/^git\+/, '');
-    execFileSync('git', ['clone', '--depth', '1', cleanUrl, tmpDir], { stdio: 'pipe' });
+    throw new Error(`Invalid extension: no valid extension.json in ${url}`);
+  }
 
-    const manifest = await loadExtensionManifest(tmpDir);
-    if (!manifest) {
-      throw new Error(`Invalid extension: no valid extension.json in ${url}`);
-    }
+  return { manifest, sourceDir: tmpDir, tempDir: tmpDir, cleanup: () => removeDirectory(tmpDir) };
+}
 
-    // validateExtensionName already called inside loadExtensionManifest
-    const targetDir = path.join(getExtensionsDir(projectDir), manifest.name);
-    await ensureDir(targetDir);
+export async function resolveExtension(projectDir: string, source: string): Promise<ResolvedExtension> {
+  if (isLocalPath(source)) {
+    return resolveFromLocal(source);
+  }
+  if (isGitUrl(source)) {
+    return resolveFromGit(projectDir, source);
+  }
+  return resolveFromNpm(projectDir, source);
+}
 
-    // Copy everything except .git
-    const entries = await fs.readdir(tmpDir);
+export async function commitExtensionInstall(projectDir: string, resolved: ResolvedExtension): Promise<void> {
+  const targetDir = path.join(getExtensionsDir(projectDir), resolved.manifest.name);
+  await ensureDir(targetDir);
+
+  if (resolved.sourceDir === resolved.tempDir && await fs.pathExists(path.join(resolved.sourceDir, '.git'))) {
+    // Git clone: copy everything except .git
+    const entries = await fs.readdir(resolved.sourceDir);
     for (const entry of entries) {
       if (entry === '.git') continue;
-      await fs.copy(path.join(tmpDir, entry), path.join(targetDir, entry), { overwrite: true });
+      await fs.copy(path.join(resolved.sourceDir, entry), path.join(targetDir, entry), { overwrite: true });
     }
-
-    return manifest;
-  } finally {
-    await removeDirectory(tmpDir);
+  } else {
+    await fs.copy(resolved.sourceDir, targetDir, { overwrite: true });
   }
 }
 
+// Legacy one-shot install (resolve + commit). Kept for backward compatibility.
 export async function installExtension(projectDir: string, source: string): Promise<ExtensionManifest> {
-  if (isLocalPath(source)) {
-    return installExtensionFromLocal(projectDir, source);
+  const resolved = await resolveExtension(projectDir, source);
+  try {
+    await commitExtensionInstall(projectDir, resolved);
+    return resolved.manifest;
+  } finally {
+    await resolved.cleanup();
   }
-  if (isGitUrl(source)) {
-    return installExtensionFromGit(projectDir, source);
-  }
-  return installExtensionFromNpm(projectDir, source);
 }
 
 export async function removeExtensionFiles(projectDir: string, name: string): Promise<void> {

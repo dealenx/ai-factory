@@ -3,7 +3,7 @@ import { copyDirectory, getSkillsDir, ensureDir, listDirectories, readTextFile, 
 import type { AgentInstallation } from './config.js';
 import { getAgentConfig } from './agents.js';
 import { processSkillTemplates, buildTemplateVars, processTemplate } from './template.js';
-import { getTransformer } from './transformer.js';
+import { getTransformer, extractFrontmatterName, replaceFrontmatterName } from './transformer.js';
 
 export interface InstallOptions {
   projectDir: string;
@@ -27,7 +27,11 @@ async function installSkillWithTransformer(
     throw new Error(`SKILL.md not found in ${sourceSkillDir}`);
   }
 
-  const result = transformer.transform(skillName, content);
+  // If skill is installed under a different name (e.g. replacement), rewrite frontmatter name
+  const fmName = extractFrontmatterName(content);
+  const adjustedContent = (fmName && fmName !== skillName) ? replaceFrontmatterName(content, skillName) : content;
+
+  const result = transformer.transform(skillName, adjustedContent);
   const vars = buildTemplateVars(agentConfig);
 
   if (result.flat) {
@@ -38,6 +42,8 @@ async function installSkillWithTransformer(
     await copyDirectory(sourceSkillDir, targetSkillDir);
     if (result.content !== content) {
       await writeTextFile(path.join(targetSkillDir, 'SKILL.md'), result.content);
+    } else if (adjustedContent !== content) {
+      await writeTextFile(path.join(targetSkillDir, 'SKILL.md'), adjustedContent);
     }
     await processSkillTemplates(targetSkillDir, agentConfig);
   }
@@ -90,13 +96,14 @@ export async function installExtensionSkills(
   agentInstallation: AgentInstallation,
   extensionDir: string,
   skillPaths: string[],
+  nameOverrides?: Record<string, string>,
 ): Promise<string[]> {
   const agentConfig = getAgentConfig(agentInstallation.id);
   const installed: string[] = [];
 
   for (const skillPath of skillPaths) {
     const sourceDir = path.join(extensionDir, skillPath);
-    const skillName = path.basename(skillPath);
+    const skillName = nameOverrides?.[skillPath] ?? path.basename(skillPath);
     try {
       await installSkillWithTransformer(sourceDir, skillName, projectDir, agentInstallation.skillsDir, agentInstallation.id, agentConfig);
       installed.push(skillName);
@@ -144,12 +151,15 @@ export async function removeExtensionSkills(
   return removeSkillsByName(projectDir, agentInstallation, skillPaths.map(p => path.basename(p)));
 }
 
-export async function updateSkills(agentInstallation: AgentInstallation, projectDir: string): Promise<string[]> {
+export async function updateSkills(agentInstallation: AgentInstallation, projectDir: string, excludeSkills?: string[]): Promise<string[]> {
   const availableSkills = await getAvailableSkills();
+  const excludeSet = new Set(excludeSkills ?? []);
+  const skillsToInstall = availableSkills.filter(s => !excludeSet.has(s));
+
   const { base: previousBaseSkills, custom } = partitionSkills(agentInstallation.installedSkills);
   const availableSet = new Set(availableSkills);
 
-  const removedSkills = previousBaseSkills.filter(s => !availableSet.has(s));
+  const removedSkills = previousBaseSkills.filter(s => !availableSet.has(s) && !excludeSet.has(s));
   if (removedSkills.length > 0) {
     await removeSkillsByName(projectDir, agentInstallation, removedSkills);
   }
@@ -157,7 +167,7 @@ export async function updateSkills(agentInstallation: AgentInstallation, project
   const installedBaseSkills = await installSkills({
     projectDir,
     skillsDir: agentInstallation.skillsDir,
-    skills: availableSkills,
+    skills: skillsToInstall,
     agentId: agentInstallation.id,
   });
 

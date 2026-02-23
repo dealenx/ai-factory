@@ -1,7 +1,7 @@
 {
   "name": "aif-ext-hello",
   "version": "1.0.0",
-  "description": "Test extension: hello world command, implement injection, custom skill, custom agent, MCP server",
+  "description": "Test extension: hello world command, implement injection, custom skill, skill replacement, custom agent, MCP server",
   "commands": [
     {
       "name": "hello",
@@ -28,8 +28,12 @@
     }
   ],
   "skills": [
-    "skills/aif-hello-world"
+    "skills/aif-hello-world",
+    "skills/hello-commit"
   ],
+  "replaces": {
+    "skills/hello-commit": "aif-commit"
+  },
   "mcpServers": [
     {
       "key": "hello-mcp",

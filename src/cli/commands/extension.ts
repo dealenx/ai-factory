@@ -2,7 +2,8 @@ import chalk from 'chalk';
 import path from 'path';
 import { loadConfig, saveConfig } from '../../core/config.js';
 import {
-  installExtension,
+  resolveExtension,
+  commitExtensionInstall,
   removeExtensionFiles,
   getExtensionsDir,
   loadExtensionManifest,
@@ -14,7 +15,7 @@ import {
   stripInjectionsByExtensionName,
 } from '../../core/injections.js';
 import { configureExtensionMcpServers, removeExtensionMcpServers } from '../../core/mcp.js';
-import { installExtensionSkills, removeExtensionSkills } from '../../core/installer.js';
+import { installExtensionSkills, removeExtensionSkills, installSkills, getAvailableSkills } from '../../core/installer.js';
 import { readJsonFile } from '../../utils/fs.js';
 import { getAgentConfig } from '../../core/agents.js';
 
@@ -35,43 +36,136 @@ export async function extensionAddCommand(source: string): Promise<void> {
   try {
     const extensions = config.extensions ?? [];
 
-    const manifest = await installExtension(projectDir, source);
+    // Phase 1: Resolve source — download/clone and validate manifest WITHOUT writing to project
+    const resolved = await resolveExtension(projectDir, source);
+    const manifest = resolved.manifest;
 
-    // Strip old injections by manifest.name (handles upgrade from any source)
-    const existingIndex = extensions.findIndex(e => e.name === manifest.name);
-    if (existingIndex >= 0) {
+    try {
+      const existIdx = extensions.findIndex(e => e.name === manifest.name);
+      const oldRecord = existIdx >= 0 ? { ...extensions[existIdx] } : null;
+
+      // Load old manifest from installed dir (still intact — we haven't overwritten yet)
+      const oldManifest = existIdx >= 0
+        ? await loadExtensionManifest(path.join(getExtensionsDir(projectDir), manifest.name))
+        : null;
+
+      // Block conflicting replacements BEFORE copying any files
+      if (manifest.replaces) {
+        for (const [, baseSkillName] of Object.entries(manifest.replaces)) {
+          for (const other of extensions) {
+            if (other.name === manifest.name) continue;
+            if (other.replacedSkills?.includes(baseSkillName)) {
+              throw new Error(`Conflict: skill "${baseSkillName}" is already replaced by extension "${other.name}". Remove it first.`);
+            }
+          }
+        }
+      }
+
+      // Phase 2: Commit — copy resolved files to .ai-factory/extensions/<name>/
+      await commitExtensionInstall(projectDir, resolved);
+
+    // Clean up old state on re-install
+    if (existIdx >= 0) {
       for (const agent of config.agents) {
         await stripInjectionsByExtensionName(projectDir, agent, manifest.name);
       }
+
+      // Remove old replacement skills (installed under base names)
+      if (oldRecord?.replacedSkills?.length) {
+        for (const agent of config.agents) {
+          await removeExtensionSkills(projectDir, agent, oldRecord.replacedSkills);
+        }
+        const available = await getAvailableSkills();
+        const toRestore = oldRecord.replacedSkills.filter(s => available.includes(s));
+        if (toRestore.length > 0) {
+          for (const agent of config.agents) {
+            await installSkills({ projectDir, skillsDir: agent.skillsDir, skills: toRestore, agentId: agent.id });
+          }
+        }
+      }
+
+      // Remove old extension custom skills using the OLD manifest (not the new one)
+      if (oldManifest?.skills?.length) {
+        const oldReplacesPaths = new Set(Object.keys(oldManifest.replaces ?? {}));
+        const oldCustomSkills = oldManifest.skills.filter(s => !oldReplacesPaths.has(s));
+        if (oldCustomSkills.length > 0) {
+          for (const agent of config.agents) {
+            await removeExtensionSkills(projectDir, agent, oldCustomSkills);
+          }
+        }
+      }
     }
 
-    // Register in config
-    const record = { name: manifest.name, source, version: manifest.version };
+    console.log(chalk.green(`✓ Extension "${manifest.name}" v${manifest.version} installed`));
 
-    if (existingIndex >= 0) {
-      extensions[existingIndex] = record;
+    const extensionDir = path.join(getExtensionsDir(projectDir), manifest.name);
+
+    // Install replacement skills — only track successfully installed ones
+    const replacedSkills: string[] = [];
+    const replacesPaths = new Set<string>();
+    if (manifest.replaces && Object.keys(manifest.replaces).length > 0) {
+      const nameOverrides: Record<string, string> = { ...manifest.replaces };
+      const replacePaths = Object.keys(manifest.replaces);
+
+      // Track per-agent success: only count as replaced if installed on ALL agents
+      const perAgentResults = new Map<string, number>(); // baseName → success count
+      for (const agent of config.agents) {
+        const installed = await installExtensionSkills(projectDir, agent, extensionDir, replacePaths, nameOverrides);
+        for (const name of installed) {
+          perAgentResults.set(name, (perAgentResults.get(name) ?? 0) + 1);
+        }
+      }
+
+      const agentCount = config.agents.length;
+      for (const [extSkillPath, baseSkillName] of Object.entries(manifest.replaces)) {
+        replacesPaths.add(extSkillPath);
+        const successCount = perAgentResults.get(baseSkillName) ?? 0;
+        if (successCount === agentCount) {
+          replacedSkills.push(baseSkillName);
+          console.log(chalk.green(`✓ Replaced skill "${baseSkillName}" with "${path.basename(extSkillPath)}"`));
+        } else if (successCount > 0) {
+          // Rollback: remove the replacement from agents where it did install, restore base skill
+          for (const agent of config.agents) {
+            await removeExtensionSkills(projectDir, agent, [baseSkillName]);
+          }
+          const available = await getAvailableSkills();
+          if (available.includes(baseSkillName)) {
+            for (const agent of config.agents) {
+              await installSkills({ projectDir, skillsDir: agent.skillsDir, skills: [baseSkillName], agentId: agent.id });
+            }
+          }
+          console.log(chalk.yellow(`⚠ Replacement "${baseSkillName}" only installed on ${successCount}/${agentCount} agents — rolled back, base skill restored`));
+        } else {
+          console.log(chalk.yellow(`⚠ Failed to replace skill "${baseSkillName}" — base skill preserved`));
+        }
+      }
+    }
+
+    // Install extension custom skills (excluding replacements)
+    if (manifest.skills?.length) {
+      const nonReplacementSkills = manifest.skills.filter(s => !replacesPaths.has(s));
+      if (nonReplacementSkills.length > 0) {
+        for (const agent of config.agents) {
+          const installed = await installExtensionSkills(projectDir, agent, extensionDir, nonReplacementSkills);
+          if (installed.length > 0) {
+            console.log(chalk.green(`✓ Skills installed for ${agent.id}: ${installed.join(', ')}`));
+          }
+        }
+      }
+    }
+
+    // Save config AFTER all installations succeed
+    const record = { name: manifest.name, source, version: manifest.version, replacedSkills: replacedSkills.length > 0 ? replacedSkills : undefined };
+    if (existIdx >= 0) {
+      extensions[existIdx] = record;
     } else {
       extensions.push(record);
     }
     config.extensions = extensions;
     await saveConfig(projectDir, config);
 
-    console.log(chalk.green(`✓ Extension "${manifest.name}" v${manifest.version} installed`));
-
-    // Install extension skills for all agents
-    if (manifest.skills?.length) {
-      const extensionDir = path.join(getExtensionsDir(projectDir), manifest.name);
-      for (const agent of config.agents) {
-        const installed = await installExtensionSkills(projectDir, agent, extensionDir, manifest.skills);
-        if (installed.length > 0) {
-          console.log(chalk.green(`✓ Skills installed for ${agent.id}: ${installed.join(', ')}`));
-        }
-      }
-    }
-
     // Apply injections for all agents
     if (manifest.injections?.length) {
-      const extensionDir = path.join(getExtensionsDir(projectDir), manifest.name);
       let totalInjections = 0;
 
       for (const agent of config.agents) {
@@ -86,7 +180,6 @@ export async function extensionAddCommand(source: string): Promise<void> {
 
     // Configure MCP servers for all agents that support it
     if (manifest.mcpServers?.length) {
-      const extensionDir = path.join(getExtensionsDir(projectDir), manifest.name);
       const mcpConfigured = await applyExtensionMcp(projectDir, config.agents.map(a => a.id), extensionDir, manifest);
       if (mcpConfigured.length > 0) {
         console.log(chalk.green(`✓ MCP servers configured: ${mcpConfigured.join(', ')}`));
@@ -109,6 +202,9 @@ export async function extensionAddCommand(source: string): Promise<void> {
     }
 
     console.log('');
+    } finally {
+      await resolved.cleanup();
+    }
   } catch (error) {
     console.log(chalk.red(`Error installing extension: ${(error as Error).message}`));
     process.exit(1);
@@ -148,13 +244,54 @@ export async function extensionRemoveCommand(name: string): Promise<void> {
       }
     }
 
-    // Remove extension skills
-    if (manifest?.skills?.length) {
+    // Fix 6: Remove replacement skills independently from manifest.skills
+    // Replacements are installed under the base skill name, so remove by base name
+    const extRecord = extensions[index];
+    if (extRecord.replacedSkills?.length) {
       for (const agent of config.agents) {
-        const removed = await removeExtensionSkills(projectDir, agent, manifest.skills);
+        const removed = await removeExtensionSkills(projectDir, agent, extRecord.replacedSkills);
         if (removed.length > 0) {
-          console.log(chalk.green(`✓ Skills removed for ${agent.id}: ${removed.join(', ')}`));
+          console.log(chalk.green(`✓ Replacement skills removed for ${agent.id}: ${removed.join(', ')}`));
         }
+      }
+    }
+
+    // Remove extension custom skills
+    if (manifest?.skills?.length) {
+      const replacesPaths = new Set(Object.keys(manifest.replaces ?? {}));
+      const customSkillPaths = manifest.skills.filter(s => !replacesPaths.has(s));
+      if (customSkillPaths.length > 0) {
+        for (const agent of config.agents) {
+          const removed = await removeExtensionSkills(projectDir, agent, customSkillPaths);
+          if (removed.length > 0) {
+            console.log(chalk.green(`✓ Skills removed for ${agent.id}: ${removed.join(', ')}`));
+          }
+        }
+      }
+    }
+
+    // Fix 4: Only restore base skills if no other extension replaces them
+    if (extRecord.replacedSkills?.length) {
+      const otherExtensions = extensions.filter((_, i) => i !== index);
+      const stillReplaced = new Set<string>();
+      for (const other of otherExtensions) {
+        if (other.replacedSkills?.length) {
+          for (const s of other.replacedSkills) stillReplaced.add(s);
+        }
+      }
+
+      const available = await getAvailableSkills();
+      const toRestore = extRecord.replacedSkills.filter(s => available.includes(s) && !stillReplaced.has(s));
+      if (toRestore.length > 0) {
+        for (const agent of config.agents) {
+          await installSkills({
+            projectDir,
+            skillsDir: agent.skillsDir,
+            skills: toRestore,
+            agentId: agent.id,
+          });
+        }
+        console.log(chalk.green(`✓ Restored base skills: ${toRestore.join(', ')}`));
       }
     }
 

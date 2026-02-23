@@ -40,7 +40,7 @@ ai-factory extension remove aif-ext-example
 
 ### What Happens on Update
 
-Running `ai-factory update` reinstalls base skills from scratch, then **re-applies all extension injections** automatically. MCP server configs and custom commands are not affected by updates.
+Running `ai-factory update` reinstalls base skills from scratch (skipping any skills replaced by extensions), re-installs replacement skills, then **re-applies all extension injections** automatically. MCP server configs and custom commands are not affected by updates.
 
 ### What Happens on Remove
 
@@ -64,8 +64,10 @@ my-extension/
 │   └── hello.js
 ├── injections/             # Content to inject into existing skills
 │   └── implement-extra.md
-├── skills/                 # Custom skills
-│   └── my-skill/
+├── skills/                 # Custom and replacement skills
+│   ├── my-skill/
+│   │   └── SKILL.md
+│   └── my-commit/          # Replaces built-in aif-commit
 │       └── SKILL.md
 └── mcp/                    # MCP server templates
     └── my-server.json
@@ -104,8 +106,12 @@ my-extension/
     }
   ],
   "skills": [
-    "skills/my-skill"
+    "skills/my-skill",
+    "skills/my-commit"
   ],
+  "replaces": {
+    "skills/my-commit": "aif-commit"
+  },
   "mcpServers": [
     {
       "key": "my-server",
@@ -129,6 +135,7 @@ Only `name` and `version` are required. All other fields are optional.
 | `agents` | `array` | Agent definitions (id, directories, MCP support). |
 | `injections` | `array` | Content to inject into existing skill files. |
 | `skills` | `array` | Paths to skill directories within the extension. |
+| `replaces` | `object` | Maps extension skill paths to base skill names they replace (e.g. `{"skills/my-commit": "aif-commit"}`). |
 | `mcpServers` | `array` | MCP server configurations to merge into agent settings. |
 
 ---
@@ -294,6 +301,65 @@ skills/my-custom-skill/
 
 On `ai-factory extension add`, these skills are installed into each configured agent's skills directory (using the same agent transformer logic as built-in skills). The original extension copy remains in `.ai-factory/extensions/<name>/`.
 
+### Skill Replacements
+
+Extensions can replace built-in skills with their own versions using the `replaces` field. This maps extension skill paths to the base skill names they replace:
+
+```json
+{
+  "skills": ["skills/my-commit"],
+  "replaces": {
+    "skills/my-commit": "aif-commit"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `replaces` | `Record<string, string>` | Maps extension skill path (from `skills` array) to the base skill name it replaces. |
+
+#### How Replacements Work
+
+The replacement skill is installed **under the base skill name**. For example, `skills/my-commit` from the extension will be installed as `aif-commit/SKILL.md` in the agent's skills directory. The user still invokes `/aif-commit` — but the content comes from the extension.
+
+**On install** (`extension add`):
+1. The extension skill overwrites the base skill directory (installed under the base name)
+2. The replacement is recorded in `.ai-factory.json`
+
+**On update** (`ai-factory update`):
+1. Replaced base skills are **skipped** during reinstallation
+2. Extension replacement skills are re-installed from `.ai-factory/extensions/`
+3. If the extension manifest is missing/broken, the base skill is **restored** automatically
+
+**On remove** (`extension remove`):
+1. The replacement skill is removed (by its base name)
+2. The original base skill is **restored** — unless another extension still replaces it
+
+#### Example
+
+An extension that replaces `aif-commit` with a custom commit workflow:
+
+```
+my-extension/
+├── extension.json
+└── skills/
+    └── my-commit/
+        └── SKILL.md
+```
+
+```json
+{
+  "name": "aif-ext-custom-commit",
+  "version": "1.0.0",
+  "skills": ["skills/my-commit"],
+  "replaces": {
+    "skills/my-commit": "aif-commit"
+  }
+}
+```
+
+After installation, the extension's `my-commit/SKILL.md` is installed as `aif-commit/SKILL.md`. The user invokes `/aif-commit` as before — the replacement is transparent.
+
 ---
 
 ## Storage Layout
@@ -341,6 +407,14 @@ Extensions are tracked in `.ai-factory.json`:
 - **Only registered extensions are loaded** — extensions must be listed in `.ai-factory.json` to have their commands executed. A rogue directory in `.ai-factory/extensions/` is ignored.
 - **Shell commands use argument arrays** — `git clone` and `npm pack` use `execFileSync` (no shell interpolation) to prevent command injection via malicious source URLs.
 - **Extensions execute code** — command modules are dynamically imported. Only install extensions you trust, just as you would with npm packages.
+
+## Community Extensions
+
+Extensions built by the community. To add yours, submit a PR to this file.
+
+| Extension | Description | Install |
+|-----------|-------------|---------|
+| [Remote Skills](https://github.com/dealenx/ai-factory-extension-remote-skills) | Install and manage skills from GitHub repositories. Supports branch selection, interactive removal, and sync with active agents. | `ai-factory extension add https://github.com/dealenx/ai-factory-extension-remote-skills.git` |
 
 ## See Also
 
