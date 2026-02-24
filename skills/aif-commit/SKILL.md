@@ -105,4 +105,4 @@ If argument provided (e.g., `/aif-commit auth`):
   3. Unstage all: `git reset HEAD`
   4. Stage and commit each group separately using `git add <files>` + `git commit`
   5. Offer to push only after all commits are done
-- Add Co-Authored-By for pair programming if mentioned
+- NEVER add `Co-Authored-By` or any other trailer attributing authorship to the AI. Commits must not contain AI co-author lines
