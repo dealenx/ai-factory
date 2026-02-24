@@ -1,13 +1,13 @@
 ---
 name: aif
-description: Set up Claude Code context for a project. Analyzes tech stack, installs relevant skills from skills.sh, generates custom skills, and configures MCP servers. Use when starting new project, setting up AI context, or asking "set up project", "configure AI", "what skills do I need".
+description: Set up agent context for a project. Analyzes tech stack, installs relevant skills from skills.sh, generates custom skills, and configures MCP servers. Use when starting new project, setting up AI context, or asking "set up project", "configure AI", "what skills do I need".
 argument-hint: "[project description]"
 allowed-tools: Read Glob Grep Write Bash(mkdir *) Bash(npx skills *) Bash(python *security-scan*) Bash(rm -rf *) Skill WebFetch AskUserQuestion Questions
 ---
 
 # AI Factory - Project Setup
 
-Set up Claude Code for your project by:
+Set up agent for your project by:
 1. Analyzing the tech stack
 2. Installing skills from [skills.sh](https://skills.sh)
 3. Generating custom skills via `/aif-skill-generator`
@@ -376,7 +376,7 @@ Install skills, configure MCP, generate `AGENTS.md`, and generate architecture d
 | AGENTS.md | This file — project structure map |
 | .ai-factory/DESCRIPTION.md | Project specification and tech stack |
 | .ai-factory/ARCHITECTURE.md | Architecture decisions and guidelines |
-| CLAUDE.md | Claude Code instructions and preferences |
+| CLAUDE.md | Agent instructions and preferences |
 ```
 
 **Rules for AGENTS.md:**
@@ -392,7 +392,7 @@ Install skills, configure MCP, generate `AGENTS.md`, and generate architecture d
 1. **Search before generating** — Don't reinvent existing skills
 2. **Ask confirmation** — Before installing or generating
 3. **Check duplicates** — Don't install what's already there
-4. **MCP in .mcp.json** — Project-level (Claude Code reads MCP from `.mcp.json`, not `settings.local.json`)
+4. **MCP in .mcp.json** — Project-level (agent reads MCP from `.mcp.json`, not `settings.local.json`)
 5. **Remind about env vars** — For MCP that need credentials
 
 ## CRITICAL: Do NOT Implement

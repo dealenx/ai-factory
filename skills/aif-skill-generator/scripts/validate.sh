@@ -126,7 +126,7 @@ else
     fi
 fi
 
-# Check argument-hint quoting (unquoted [] breaks YAML in OpenCode/Kilo Code, crashes Claude Code TUI)
+# Check argument-hint quoting (unquoted [] breaks YAML in OpenCode/Kilo Code, crashes agent TUI)
 ARG_HINT_LINE=$(echo "$FRONTMATTER" | grep -E "^argument-hint:" | head -1)
 
 if [[ -n "$ARG_HINT_LINE" ]]; then

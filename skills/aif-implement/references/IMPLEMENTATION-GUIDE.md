@@ -58,7 +58,7 @@ Then:
 ```
 User: /aif-implement
 
-Claude: Resuming implementation...
+Agent: Resuming implementation...
 
 Found 3 completed tasks, 5 pending.
 Continuing from Task #4: Implement JWT generation
