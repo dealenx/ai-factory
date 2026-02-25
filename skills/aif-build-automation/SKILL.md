@@ -6,7 +6,7 @@ description: >-
   Use when user says "generate makefile", "create taskfile", "add justfile", "setup mage", or "build automation".
 argument-hint: "[makefile|taskfile|justfile|mage]"
 allowed-tools: Read Edit Glob Grep Write Bash(git *) AskUserQuestion Questions
-disable-model-invocation: true
+disable-model-invocation: false
 metadata:
   author: AI Factory
   version: "1.0"

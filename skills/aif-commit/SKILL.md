@@ -3,7 +3,7 @@ name: aif-commit
 description: Create conventional commit messages by analyzing staged changes. Generates semantic commit messages following the Conventional Commits specification. Use when user says "commit", "save changes", or "create commit".
 argument-hint: "[scope or context]"
 allowed-tools: Bash(git *)
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Conventional Commit Generator

@@ -7,7 +7,7 @@ description: >-
   "containerize", or "setup docker".
 argument-hint: "[--audit]"
 allowed-tools: Read Edit Glob Grep Write Bash(git *) Bash(docker *) AskUserQuestion Questions WebSearch WebFetch
-disable-model-invocation: true
+disable-model-invocation: false
 metadata:
   author: AI Factory
   version: "1.0"
