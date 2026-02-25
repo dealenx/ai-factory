@@ -415,6 +415,7 @@ Extensions built by the community. To add yours, submit a PR to this file.
 | Extension | Description | Install |
 |-----------|-------------|---------|
 | [Remote Skills](https://github.com/dealenx/ai-factory-extension-remote-skills) | Install and manage skills from GitHub repositories. Supports branch selection, interactive removal, and sync with active agents. | `ai-factory extension add https://github.com/dealenx/ai-factory-extension-remote-skills.git` |
+| [AIF Extension Creator](https://github.com/dealenx/ai-factory-extension-aif-extension-creator-skill) |An AI Factory extension that provides an interactive skill for scaffolding new AI Factory extensions. | `ai-factory extension add https://github.com/dealenx/ai-factory-extension-aif-extension-creator-skill.git` |
 
 ## See Also
 
