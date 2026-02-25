@@ -37,6 +37,7 @@ export class AntigravityTransformer implements AgentTransformer {
 
 ## Skill Usage
 
+- Use \`/aif-explore\` to think through ideas before planning — no implementation, just exploration
 - Use \`/aif-plan\` for new features — creates branch, plan, and tasks
 - Use \`/aif-fix\` for bug fixes — analyzes, fixes, suggests tests
 - Use \`/aif-commit\` for commits — follows conventional commits
@@ -58,6 +59,7 @@ AI Factory organizes skills into three categories:
 
 ### Workflows (.agent/workflows/)
 Action-oriented skills that execute specific tasks:
+- \`aif-explore.md\` — Think through ideas, investigate problems
 - \`aif-plan.md\` — Plan and develop new features
 - \`aif-fix.md\` — Fix bugs with structured approach
 - \`aif-implement.md\` — Execute plans step by step
