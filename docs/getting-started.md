@@ -50,11 +50,14 @@ ai-factory init
 # 4. Open your AI agent (Claude Code, Cursor, etc.) and run:
 /aif
 
-# 5. Start building
+# 5. Optional discovery before planning
+/aif-explore Add user authentication with OAuth
+
+# 6. Start building
 /aif-plan Add user authentication with OAuth
 ```
 
-From here, AI Factory creates a branch, builds a plan, and you run `/aif-implement` to execute it step by step.
+If scope is unclear, start with `/aif-explore`; if it is already clear, jump straight to `/aif-plan`. From there, AI Factory creates a branch (full mode), builds a plan, and you run `/aif-implement` to execute it step by step.
 
 ## CLI Commands
 

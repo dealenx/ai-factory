@@ -6,6 +6,18 @@
 
 These skills form the core development loop. See [Development Workflow](workflow.md) for the full diagram and how they connect.
 
+### `/aif-explore [topic or plan name]`
+Explore ideas, constraints, and trade-offs before planning:
+```
+/aif-explore real-time collaboration
+/aif-explore the auth system is getting unwieldy
+/aif-explore add-auth-system
+```
+- Uses a thinking-partner mode: open questions, option mapping, and ASCII visualization
+- Reads project context from `.ai-factory/DESCRIPTION.md`, `ARCHITECTURE.md`, `RULES.md`, and active plan files when present
+- Does **not** implement code in this mode; when direction is clear, move to `/aif-plan`
+- Can capture decisions in context files on request (for example architecture notes, rules, and roadmap updates)
+
 ### `/aif-plan [fast|full] <description>`
 Plans implementation for a feature or task:
 ```
