@@ -2,7 +2,7 @@
 
 # Development Workflow
 
-AI Factory has two phases: **configuration** (one-time project setup) and the **development workflow** (repeatable loop of plan → implement → verify → commit → evolve).
+AI Factory has two phases: **configuration** (one-time project setup) and the **development workflow** (repeatable loop of explore → plan → improve → implement → verify → commit → evolve).
 
 ## Project Configuration
 
@@ -47,6 +47,8 @@ Run once per project. Sets up context files that all workflow skills depend on.
 ## Development Workflow
 
 The repeatable development loop. Each skill feeds into the next, sharing context through plan files and patches.
+
+Optional discovery step: use `/aif-explore` before planning to investigate ideas, compare options, and clarify requirements.
 
 ![workflow](https://github.com/lee-to/ai-factory/raw/2.x/art/workflow.png)
 
@@ -139,6 +141,7 @@ The repeatable development loop. Each skill feeds into the next, sharing context
 
 | Command | Use Case | Creates Branch? | Creates Plan? |
 |---------|----------|-----------------|---------------|
+| `/aif-explore` | Discovery, option comparison, and requirements clarification before planning | No | No (reads existing context) |
 | `/aif-roadmap` | Strategic planning, milestones, long-term vision | No | `.ai-factory/ROADMAP.md` |
 | `/aif-plan fast` | Small tasks, quick fixes, experiments | No | `.ai-factory/PLAN.md` |
 | `/aif-plan full` | Full features, stories, epics | Yes | `.ai-factory/plans/<branch>.md` |
@@ -151,6 +154,16 @@ The repeatable development loop. Each skill feeds into the next, sharing context
 ## Workflow Skills
 
 These skills form the development pipeline. Each one feeds into the next.
+
+### `/aif-explore [topic or plan name]` — discovery before planning
+
+```
+/aif-explore real-time collaboration
+/aif-explore the auth system is getting unwieldy
+/aif-explore add-auth-system
+```
+
+Thinking-partner mode for exploring ideas, constraints, and trade-offs without implementing code. Reads `.ai-factory/DESCRIPTION.md`, `ARCHITECTURE.md`, `RULES.md`, and active plan files for context. When direction is clear, transition to `/aif-plan fast` or `/aif-plan full`.
 
 ### `/aif-roadmap [check | vision]` — strategic planning
 
