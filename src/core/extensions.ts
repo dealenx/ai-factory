@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { readJsonFile, removeDirectory, ensureDir } from '../utils/fs.js';
+import type { McpServerConfig } from './mcp.js';
 
 export interface ExtensionInjection {
   target: string;
@@ -26,7 +27,7 @@ export interface ExtensionAgentDef {
 
 export interface ExtensionMcpServer {
   key: string;
-  template: string;
+  template: string | McpServerConfig;
   instruction?: string;
 }
 

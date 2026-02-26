@@ -12,7 +12,7 @@ import {
 import {
   applySingleExtensionInjections,
 } from '../../core/injections.js';
-import { configureExtensionMcpServers, removeExtensionMcpServers } from '../../core/mcp.js';
+import { configureExtensionMcpServers, removeExtensionMcpServers, validateMcpTemplate, type McpServerConfig } from '../../core/mcp.js';
 import { installExtensionSkills } from '../../core/installer.js';
 import { readJsonFile } from '../../utils/fs.js';
 import { getAgentConfig } from '../../core/agents.js';
@@ -314,12 +314,6 @@ export async function extensionListCommand(): Promise<void> {
   console.log('');
 }
 
-interface McpServerConfig {
-  command: string;
-  args?: string[];
-  env?: Record<string, string>;
-}
-
 async function applyExtensionMcp(
   projectDir: string,
   agentIds: string[],
@@ -331,9 +325,15 @@ async function applyExtensionMcp(
   const allConfigured: string[] = [];
 
   for (const srv of manifest.mcpServers) {
-    const templatePath = path.join(extensionDir, srv.template);
-    const template = await readJsonFile<McpServerConfig>(templatePath);
+    let template: unknown;
+    if (typeof srv.template === 'string') {
+      const templatePath = path.join(extensionDir, srv.template);
+      template = await readJsonFile<McpServerConfig>(templatePath);
+    } else {
+      template = srv.template;
+    }
     if (!template) continue;
+    validateMcpTemplate(template, srv.key);
 
     for (const agentId of agentIds) {
       const agentConfig = getAgentConfig(agentId);
