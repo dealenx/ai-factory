@@ -26,7 +26,7 @@ export interface ExtensionAgentDef {
 
 export interface ExtensionMcpServer {
   key: string;
-  template: string;
+  template: string | { command: string; args?: string[]; env?: Record<string, string> };
   instruction?: string;
 }
 

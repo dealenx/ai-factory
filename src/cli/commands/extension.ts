@@ -331,8 +331,13 @@ async function applyExtensionMcp(
   const allConfigured: string[] = [];
 
   for (const srv of manifest.mcpServers) {
-    const templatePath = path.join(extensionDir, srv.template);
-    const template = await readJsonFile<McpServerConfig>(templatePath);
+    let template: McpServerConfig | null;
+    if (typeof srv.template === 'string') {
+      const templatePath = path.join(extensionDir, srv.template);
+      template = await readJsonFile<McpServerConfig>(templatePath);
+    } else {
+      template = srv.template as McpServerConfig;
+    }
     if (!template) continue;
 
     for (const agentId of agentIds) {
