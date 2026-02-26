@@ -314,6 +314,18 @@ export async function extensionListCommand(): Promise<void> {
   console.log('');
 }
 
+function validateMcpTemplate(template: McpServerConfig, key: string): void {
+  if (!template.command || typeof template.command !== 'string') {
+    throw new Error(`MCP server "${key}": template must have a non-empty "command" string`);
+  }
+  if (template.args !== undefined && (!Array.isArray(template.args) || template.args.some(a => typeof a !== 'string'))) {
+    throw new Error(`MCP server "${key}": template "args" must be an array of strings`);
+  }
+  if (template.env !== undefined && (typeof template.env !== 'object' || Array.isArray(template.env) || Object.values(template.env).some(v => typeof v !== 'string'))) {
+    throw new Error(`MCP server "${key}": template "env" must be a record of strings`);
+  }
+}
+
 async function applyExtensionMcp(
   projectDir: string,
   agentIds: string[],
@@ -333,6 +345,7 @@ async function applyExtensionMcp(
       template = srv.template as McpServerConfig;
     }
     if (!template) continue;
+    validateMcpTemplate(template, srv.key);
 
     for (const agentId of agentIds) {
       const agentConfig = getAgentConfig(agentId);
