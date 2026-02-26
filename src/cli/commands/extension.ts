@@ -314,14 +314,18 @@ export async function extensionListCommand(): Promise<void> {
   console.log('');
 }
 
-function validateMcpTemplate(template: McpServerConfig, key: string): void {
-  if (!template.command || typeof template.command !== 'string') {
+function validateMcpTemplate(template: unknown, key: string): asserts template is McpServerConfig {
+  if (typeof template !== 'object' || template === null || Array.isArray(template)) {
+    throw new Error(`MCP server "${key}": template must be an object`);
+  }
+  const t = template as Record<string, unknown>;
+  if (!t.command || typeof t.command !== 'string') {
     throw new Error(`MCP server "${key}": template must have a non-empty "command" string`);
   }
-  if (template.args !== undefined && (!Array.isArray(template.args) || template.args.some(a => typeof a !== 'string'))) {
+  if (t.args !== undefined && (!Array.isArray(t.args) || t.args.some(a => typeof a !== 'string'))) {
     throw new Error(`MCP server "${key}": template "args" must be an array of strings`);
   }
-  if (template.env !== undefined && (typeof template.env !== 'object' || Array.isArray(template.env) || Object.values(template.env).some(v => typeof v !== 'string'))) {
+  if (t.env !== undefined && (typeof t.env !== 'object' || Array.isArray(t.env) || Object.values(t.env as object).some(v => typeof v !== 'string'))) {
     throw new Error(`MCP server "${key}": template "env" must be a record of strings`);
   }
 }
@@ -337,12 +341,12 @@ async function applyExtensionMcp(
   const allConfigured: string[] = [];
 
   for (const srv of manifest.mcpServers) {
-    let template: McpServerConfig | null;
+    let template: unknown;
     if (typeof srv.template === 'string') {
       const templatePath = path.join(extensionDir, srv.template);
       template = await readJsonFile<McpServerConfig>(templatePath);
     } else {
-      template = srv.template as McpServerConfig;
+      template = srv.template;
     }
     if (!template) continue;
     validateMcpTemplate(template, srv.key);
