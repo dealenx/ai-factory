@@ -25,7 +25,14 @@ export function validateMcpTemplate(template: unknown, key: string): asserts tem
   if (t.args !== undefined && (!Array.isArray(t.args) || t.args.some(a => typeof a !== 'string'))) {
     throw new Error(`MCP server "${key}": template "args" must be an array of strings`);
   }
-  if (t.env !== undefined && (typeof t.env !== 'object' || Array.isArray(t.env) || Object.values(t.env as object).some(v => typeof v !== 'string'))) {
+  if (
+    t.env !== undefined && (
+      typeof t.env !== 'object' ||
+      t.env === null ||
+      Array.isArray(t.env) ||
+      Object.values(t.env).some(v => typeof v !== 'string')
+    )
+  ) {
     throw new Error(`MCP server "${key}": template "env" must be a record of strings`);
   }
 }
