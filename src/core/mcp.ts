@@ -2,7 +2,7 @@ import path from 'path';
 import { readJsonFile, writeJsonFile, getMcpDir, ensureDir, fileExists } from '../utils/fs.js';
 import { getAgentConfig } from './agents.js';
 
-interface McpServerConfig {
+export interface McpServerConfig {
   command: string;
   args?: string[];
   env?: Record<string, string>;

@@ -12,7 +12,7 @@ import {
 import {
   applySingleExtensionInjections,
 } from '../../core/injections.js';
-import { configureExtensionMcpServers, removeExtensionMcpServers } from '../../core/mcp.js';
+import { configureExtensionMcpServers, removeExtensionMcpServers, type McpServerConfig } from '../../core/mcp.js';
 import { installExtensionSkills } from '../../core/installer.js';
 import { readJsonFile } from '../../utils/fs.js';
 import { getAgentConfig } from '../../core/agents.js';
@@ -312,12 +312,6 @@ export async function extensionListCommand(): Promise<void> {
     }
   }
   console.log('');
-}
-
-interface McpServerConfig {
-  command: string;
-  args?: string[];
-  env?: Record<string, string>;
 }
 
 async function applyExtensionMcp(
