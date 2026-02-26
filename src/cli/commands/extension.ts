@@ -314,11 +314,17 @@ export async function extensionListCommand(): Promise<void> {
   console.log('');
 }
 
+const KNOWN_MCP_TEMPLATE_KEYS = new Set(['command', 'args', 'env']);
+
 function validateMcpTemplate(template: unknown, key: string): asserts template is McpServerConfig {
   if (typeof template !== 'object' || template === null || Array.isArray(template)) {
     throw new Error(`MCP server "${key}": template must be an object`);
   }
   const t = template as Record<string, unknown>;
+  const unknownKeys = Object.keys(t).filter(k => !KNOWN_MCP_TEMPLATE_KEYS.has(k));
+  if (unknownKeys.length > 0) {
+    throw new Error(`MCP server "${key}": template has unknown keys: ${unknownKeys.join(', ')}. Allowed keys: command, args, env`);
+  }
   if (!t.command || typeof t.command !== 'string') {
     throw new Error(`MCP server "${key}": template must have a non-empty "command" string`);
   }
