@@ -59,11 +59,11 @@ AI Factory can configure these MCP servers:
 | Chrome Devtools | Browser inspection, debugging, performance | - |
 | Playwright | Browser automation, web testing | - |
 
-Configuration saved to agent's settings file (e.g. `.mcp.json` for Claude Code, `.cursor/mcp.json` for Cursor, `.roo/mcp.json` for Roo Code, `.kilocode/mcp.json` for Kilo Code, `opencode.json` for OpenCode).
+Configuration saved to agent's settings file (e.g. `.mcp.json` for Claude Code, `.cursor/mcp.json` for Cursor, `.vscode/mcp.json` for GitHub Copilot, `.roo/mcp.json` for Roo Code, `.kilocode/mcp.json` for Kilo Code, `opencode.json` for OpenCode). GitHub Copilot uses `servers` as the root object in `mcp.json`; other standard agents use `mcpServers` (OpenCode uses `mcp`).
 
 ### Environment Variables
 
-MCP configs use `${VAR}` placeholders for credentials. Set them before launching the agent:
+MCP configs use `${VAR}` placeholders for credentials (GitHub Copilot receives `${env:VAR}` in `.vscode/mcp.json`). Set them before launching the agent:
 
 ```bash
 export GITHUB_TOKEN="ghp_your_token"

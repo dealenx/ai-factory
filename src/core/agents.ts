@@ -41,8 +41,8 @@ const AGENT_REGISTRY: Record<string, AgentConfig> = {
     displayName: 'GitHub Copilot',
     configDir: '.github',
     skillsDir: '.github/skills',
-    settingsFile: null,
-    supportsMcp: false,
+    settingsFile: '.vscode/mcp.json',
+    supportsMcp: true,
     skillsCliAgent: 'github-copilot',
   },
   gemini: {

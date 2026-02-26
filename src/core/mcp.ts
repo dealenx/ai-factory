@@ -43,6 +43,13 @@ interface OpenCodeMcpServerConfig {
   environment?: Record<string, string>;
 }
 
+interface VsCodeMcpServerConfig {
+  type: 'stdio';
+  command: string;
+  args?: string[];
+  env?: Record<string, string>;
+}
+
 export interface McpOptions {
   github: boolean;
   filesystem: boolean;
@@ -51,7 +58,7 @@ export interface McpOptions {
   playwright: boolean;
 }
 
-type McpSettingsFormat = 'standard' | 'opencode';
+type McpSettingsFormat = 'standard' | 'opencode' | 'vscode';
 
 interface McpServerDefinition {
   key: keyof McpOptions;
@@ -65,6 +72,30 @@ function toOpenCodeFormat(config: McpServerConfig): OpenCodeMcpServerConfig {
   if (config.env) {
     result.environment = config.env;
   }
+  return result;
+}
+
+function normalizeVsCodeEnvValue(value: string): string {
+  const envRefMatch = value.match(/^\$\{([A-Za-z_][A-Za-z0-9_]*)\}$/);
+  if (!envRefMatch) {
+    return value;
+  }
+  return `\${env:${envRefMatch[1]}}`;
+}
+
+function toVsCodeFormat(config: McpServerConfig): VsCodeMcpServerConfig {
+  const result: VsCodeMcpServerConfig = { type: 'stdio', command: config.command };
+
+  if (config.args && config.args.length > 0) {
+    result.args = [...config.args];
+  }
+
+  if (config.env && Object.keys(config.env).length > 0) {
+    result.env = Object.fromEntries(
+      Object.entries(config.env).map(([key, value]) => [key, normalizeVsCodeEnvValue(value)]),
+    );
+  }
+
   return result;
 }
 
@@ -119,14 +150,39 @@ async function loadSettings(settingsPath: string): Promise<Record<string, unknow
   return isRecord(parsed) ? parsed : {};
 }
 
+function resolveMcpSettingsFormat(agentId: string): McpSettingsFormat {
+  if (agentId === 'opencode') {
+    return 'opencode';
+  }
+  if (agentId === 'copilot') {
+    return 'vscode';
+  }
+  return 'standard';
+}
+
+function getContainerKey(format: McpSettingsFormat): 'mcp' | 'mcpServers' | 'servers' {
+  if (format === 'opencode') {
+    return 'mcp';
+  }
+  if (format === 'vscode') {
+    return 'servers';
+  }
+  return 'mcpServers';
+}
+
 function applyServerConfig(
   settings: Record<string, unknown>,
   format: McpSettingsFormat,
-  key: keyof McpOptions,
+  key: string,
   template: McpServerConfig,
 ): void {
   if (format === 'opencode') {
     ensureNestedRecord(settings, 'mcp')[key] = toOpenCodeFormat(template);
+    return;
+  }
+
+  if (format === 'vscode') {
+    ensureNestedRecord(settings, 'servers')[key] = toVsCodeFormat(template);
     return;
   }
 
@@ -140,7 +196,7 @@ export async function configureMcp(projectDir: string, options: McpOptions, agen
     return [];
   }
 
-  const format: McpSettingsFormat = agentId === 'opencode' ? 'opencode' : 'standard';
+  const format = resolveMcpSettingsFormat(agentId);
   const configuredServers: string[] = [];
   const settingsPath = path.join(projectDir, agent.settingsFile);
   const settingsDir = path.dirname(settingsPath);
@@ -188,18 +244,14 @@ export async function configureExtensionMcpServers(
     return [];
   }
 
-  const format: McpSettingsFormat = agentId === 'opencode' ? 'opencode' : 'standard';
+  const format = resolveMcpSettingsFormat(agentId);
   const settingsPath = path.join(projectDir, agent.settingsFile);
   await ensureDir(path.dirname(settingsPath));
   const settings = await loadSettings(settingsPath);
   const configured: string[] = [];
 
   for (const { key, template } of servers) {
-    if (format === 'opencode') {
-      ensureNestedRecord(settings, 'mcp')[key] = toOpenCodeFormat(template);
-    } else {
-      ensureNestedRecord(settings, 'mcpServers')[key] = template;
-    }
+    applyServerConfig(settings, format, key, template);
     configured.push(key);
   }
 
@@ -220,10 +272,10 @@ export async function removeExtensionMcpServers(
     return;
   }
 
-  const format: McpSettingsFormat = agentId === 'opencode' ? 'opencode' : 'standard';
+  const format = resolveMcpSettingsFormat(agentId);
   const settingsPath = path.join(projectDir, agent.settingsFile);
   const settings = await loadSettings(settingsPath);
-  const containerKey = format === 'opencode' ? 'mcp' : 'mcpServers';
+  const containerKey = getContainerKey(format);
   const container = settings[containerKey];
 
   if (!isRecord(container)) return;

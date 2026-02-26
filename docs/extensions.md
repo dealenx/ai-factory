@@ -250,7 +250,7 @@ Same format as built-in MCP templates:
 }
 ```
 
-The template is merged into the agent's settings file under `mcpServers.<key>` (or `mcp.<key>` for OpenCode). Only agents with `supportsMcp: true` are configured. On `extension remove`, the key is deleted from the settings file.
+The template is merged into the agent's settings file under `mcpServers.<key>` (or `servers.<key>` for GitHub Copilot, `mcp.<key>` for OpenCode). Only agents with `supportsMcp: true` are configured. On `extension remove`, the key is deleted from the settings file.
 
 ---
 
