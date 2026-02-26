@@ -8,6 +8,28 @@ export interface McpServerConfig {
   env?: Record<string, string>;
 }
 
+const KNOWN_MCP_TEMPLATE_KEYS = new Set(['command', 'args', 'env']);
+
+export function validateMcpTemplate(template: unknown, key: string): asserts template is McpServerConfig {
+  if (typeof template !== 'object' || template === null || Array.isArray(template)) {
+    throw new Error(`MCP server "${key}": template must be an object`);
+  }
+  const t = template as Record<string, unknown>;
+  const unknownKeys = Object.keys(t).filter(k => !KNOWN_MCP_TEMPLATE_KEYS.has(k));
+  if (unknownKeys.length > 0) {
+    throw new Error(`MCP server "${key}": template has unknown keys: ${unknownKeys.join(', ')}. Allowed keys: command, args, env`);
+  }
+  if (!t.command || typeof t.command !== 'string') {
+    throw new Error(`MCP server "${key}": template must have a non-empty "command" string`);
+  }
+  if (t.args !== undefined && (!Array.isArray(t.args) || t.args.some(a => typeof a !== 'string'))) {
+    throw new Error(`MCP server "${key}": template "args" must be an array of strings`);
+  }
+  if (t.env !== undefined && (typeof t.env !== 'object' || Array.isArray(t.env) || Object.values(t.env as object).some(v => typeof v !== 'string'))) {
+    throw new Error(`MCP server "${key}": template "env" must be a record of strings`);
+  }
+}
+
 interface OpenCodeMcpServerConfig {
   type: 'local';
   command: string[];
