@@ -1,6 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://ai-factory.dev/schemas/extension.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AI Factory Extension Manifest",
   "description": "Manifest file for an ai-factory extension",
   "type": "object",
@@ -72,7 +71,15 @@
     },
     "ExtensionAgentDef": {
       "type": "object",
-      "required": ["id", "displayName", "configDir", "skillsDir", "settingsFile", "supportsMcp", "skillsCliAgent"],
+      "required": [
+        "id",
+        "displayName",
+        "configDir",
+        "skillsDir",
+        "settingsFile",
+        "supportsMcp",
+        "skillsCliAgent"
+      ],
       "additionalProperties": false,
       "properties": {
         "id": {
